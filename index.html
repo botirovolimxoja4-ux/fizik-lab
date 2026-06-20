@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>FizikLab — fizika kalkulyatori</title>
+<meta name="description" content="Aniq hisoblaydigan fizika kalkulyatori: yechimlar, misollar, formulalar, grafiklar.">
+<meta name="theme-color" content="#0b1020">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./favicon.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FizikLab">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a; --bg2:#0e1426; --surface:rgba(22,29,51,.72); --surface2:rgba(30,39,66,.55);
+  --line:rgba(120,140,190,.16); --line2:rgba(120,140,190,.28);
+  --txt:#eef1f8; --muted:#8b96b3; --muted2:#6c7796;
+  --cyan:#38e1ff; --cyan-d:#1aa6c4; --amber:#ffb454; --green:#54e6a8; --red:#ff7a8a;
+  --display:'Space Grotesk',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  --nav-h:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--body); color:var(--txt); line-height:1.5;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(56,225,255,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(255,180,84,.07), transparent 55%),
+    linear-gradient(180deg,var(--bg2),var(--bg) 40%);
+  background-attachment:fixed; min-height:100dvh;
+  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit}
+
+/* header */
+header{
+  position:sticky;top:0;z-index:30;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;
+  display:flex;align-items:center;gap:11px;
+  background:linear-gradient(180deg,rgba(10,14,26,.92),rgba(10,14,26,.55));
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+}
+.logo{width:34px;height:34px;flex:0 0 auto;filter:drop-shadow(0 0 8px rgba(56,225,255,.35))}
+.brand{display:flex;flex-direction:column;line-height:1.05}
+.brand b{font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.2px}
+.brand b i{color:var(--cyan);font-style:normal}
+.brand span{font-size:11px;color:var(--muted)}
+.hdr-actions{margin-left:auto;display:flex;gap:8px}
+.icon-btn{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  height:34px;padding:0 11px;border-radius:11px;font-size:12.5px;font-weight:600;
+  background:var(--surface2);border:1px solid var(--line2);color:var(--txt);
+}
+.icon-btn.accent{background:linear-gradient(135deg,var(--cyan),var(--cyan-d));color:#04222b;border:none}
+.hidden{display:none!important}
+
+/* main + views */
+main{max-width:560px;margin:0 auto;padding:16px 14px 8px}
+.view{display:none;animation:fade .28s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.section-lead{color:var(--muted);font-size:13.5px;margin:2px 2px 16px}
+
+/* topic / tool grid */
+.topic-grid,.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.topic-card,.tool-card{
+  text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  padding:16px 14px;display:flex;flex-direction:column;gap:3px;transition:.18s;
+  backdrop-filter:blur(8px);
+}
+.topic-card:active,.tool-card:active{transform:scale(.97);border-color:var(--cyan)}
+.t-icon{font-size:26px}
+.t-name{font-family:var(--display);font-weight:600;font-size:15px;margin-top:4px}
+.t-desc{font-size:11.5px;color:var(--muted)}
+.tool-grid{grid-template-columns:1fr}
+.tool-card{flex-direction:row;align-items:center;gap:14px}
+.tool-card .t-icon{font-size:24px}
+.tool-card .t-name{margin-top:0}
+
+/* crumb / back */
+.crumb{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.crumb-title{font-family:var(--display);font-weight:600;font-size:16px}
+.back-btn{
+  background:var(--surface2);border:1px solid var(--line2);border-radius:10px;
+  padding:7px 12px;font-size:13px;font-weight:600;color:var(--cyan)
+}
+.back-btn:active{transform:scale(.96)}
+
+/* formula list */
+.formula-list{display:flex;flex-direction:column;gap:9px}
+.formula-pick{
+  text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:14px 15px;display:flex;flex-direction:column;gap:5px;transition:.16s
+}
+.formula-pick:active{transform:scale(.98);border-color:var(--cyan)}
+.fp-title{font-weight:600;font-size:14.5px}
+.fp-eq{font-family:var(--mono);font-size:13px;color:var(--cyan)}
+
+/* solver */
+.solver{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px}
+.solver-eq{
+  font-family:var(--mono);font-size:20px;font-weight:600;text-align:center;color:var(--cyan);
+  padding:14px;background:rgba(56,225,255,.07);border:1px solid rgba(56,225,255,.18);
+  border-radius:14px;margin-bottom:16px;letter-spacing:.5px
+}
+.field-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
+.chip{
+  padding:7px 13px;border-radius:999px;font-size:13px;font-weight:600;
+  background:var(--surface2);border:1px solid var(--line2);color:var(--muted)
+}
+.chip.on{background:linear-gradient(135deg,var(--cyan),var(--cyan-d));color:#04222b;border-color:transparent}
+.inputs{display:flex;flex-direction:column;gap:11px}
+.in-row{display:flex;flex-direction:column;gap:6px}
+.in-name{font-size:13px;color:var(--muted)}
+.in-name i{color:var(--muted2);font-style:normal;font-size:12px}
+.in-field{
+  width:100%;background:rgba(10,14,26,.6);border:1.5px solid var(--line2);border-radius:12px;
+  padding:13px 14px;color:var(--txt);font-size:16px;font-family:var(--mono);transition:.15s;outline:none
+}
+.in-field:focus{border-color:var(--cyan);background:rgba(56,225,255,.06)}
+
+/* result */
+.result{margin-top:18px}
+.res-card{
+  width:100%;text-align:left;border-radius:16px;padding:15px 16px;
+  background:linear-gradient(135deg,rgba(56,225,255,.14),rgba(255,180,84,.07));
+  border:1px solid rgba(56,225,255,.32);display:flex;flex-direction:column;gap:8px;transition:.2s
+}
+.res-card:active{transform:scale(.99)}
+.res-top{display:flex;justify-content:space-between;align-items:center}
+.res-label{font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--cyan);font-weight:700}
+.res-hint{font-size:11.5px;color:var(--muted)}
+.res-card.open .res-hint::after{content:''}
+.res-value{font-family:var(--mono);font-size:30px;font-weight:600;color:#fff;letter-spacing:.5px}
+.res-unit{font-size:16px;color:var(--amber);margin-left:8px;font-weight:500}
+.res-bad{color:var(--red);font-size:13.5px;padding:12px;background:rgba(255,122,138,.08);border:1px solid rgba(255,122,138,.25);border-radius:12px}
+.res-steps,.ex-steps{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.res-steps.open,.ex-steps.open{max-height:900px}
+
+/* steps */
+.steps{margin-top:12px;display:flex;flex-direction:column;gap:1px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.step{display:flex;gap:10px;padding:11px 13px;background:var(--surface2);align-items:baseline}
+.step:nth-child(even){background:rgba(16,22,40,.5)}
+.step-l{flex:0 0 38%;font-size:12px;color:var(--muted);font-weight:600}
+.step-c{flex:1;font-family:var(--mono);font-size:13.5px;color:var(--txt)}
+.step:last-child .step-c{color:var(--green);font-weight:600}
+
+/* filters */
+.filter-row{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 14px;margin:0 -2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.filter{
+  flex:0 0 auto;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;white-space:nowrap;
+  background:var(--surface2);border:1px solid var(--line2);color:var(--muted)
+}
+.filter.on{background:var(--txt);color:#0a0e1a;border-color:transparent}
+
+/* examples */
+.ex-list{display:flex;flex-direction:column;gap:12px}
+.ex-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 15px}
+.ex-tag{font-size:11.5px;color:var(--cyan);font-weight:600;margin-bottom:8px}
+.ex-q{font-size:14.5px;line-height:1.55;margin-bottom:13px}
+.ex-ans{
+  width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:13px 14px;border-radius:13px;background:rgba(84,230,168,.1);border:1px solid rgba(84,230,168,.28);
+  font-size:14px;transition:.18s
+}
+.ex-ans b{color:var(--green)}
+.ex-ans:active{transform:scale(.99)}
+.ex-hint{font-size:11.5px;color:var(--muted);flex:0 0 auto}
+
+/* theory */
+.th-list{display:flex;flex-direction:column;gap:11px}
+.th-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:15px}
+.th-title{font-family:var(--display);font-weight:600;font-size:15px;margin-bottom:8px}
+.th-eq{font-family:var(--mono);font-size:17px;color:var(--cyan);background:rgba(56,225,255,.07);border-radius:10px;padding:10px 12px;text-align:center;margin-bottom:11px}
+.th-vars{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.th-vars li{font-size:13px;color:var(--muted)}
+.th-vars b{color:var(--txt);font-weight:600}
+
+/* graph */
+.graph-box{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px}
+.g-inputs{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.graph-canvas{width:100%;display:block;border-radius:10px}
+.g-caption{text-align:center;font-family:var(--mono);font-size:13px;color:var(--amber);margin-top:10px}
+
+/* converter */
+.tool-h{font-family:var(--display);font-size:19px;margin:6px 2px 14px;font-weight:600}
+.conv-wrap{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.conv-row{display:flex;gap:9px}
+.conv-input{flex:1;background:rgba(10,14,26,.6);border:1.5px solid var(--line2);border-radius:12px;padding:13px;color:var(--txt);font-family:var(--mono);font-size:17px;outline:none;min-width:0}
+.conv-input:focus{border-color:var(--cyan)}
+.conv-input.out{color:var(--cyan);font-weight:600}
+.conv-sel{flex:0 0 38%;background:rgba(10,14,26,.6);border:1.5px solid var(--line2);border-radius:12px;padding:13px 8px;color:var(--txt);font-size:14px;outline:none}
+.conv-eq{text-align:center;font-size:20px;color:var(--muted);font-family:var(--mono)}
+
+/* constants */
+.const-list{display:flex;flex-direction:column;gap:8px}
+.const-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:12px 14px}
+.c-sym{font-family:var(--mono);font-size:18px;color:var(--cyan);font-weight:600;flex:0 0 46px}
+.c-mid{flex:1;font-size:13px}
+.c-mid b{font-weight:500}
+.c-val{font-family:var(--mono);font-size:12.5px;color:var(--amber);text-align:right}
+
+/* photos */
+.muted-note{font-size:13px;color:var(--muted);margin:0 2px 14px;line-height:1.5}
+.empty-note{text-align:center;color:var(--muted2);font-size:13.5px;padding:30px 0}
+.photo-add{margin-bottom:16px}
+.btn-primary{width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,var(--cyan),var(--cyan-d));color:#04222b;font-weight:700;font-size:15px}
+.btn-primary:active{transform:scale(.99)}
+.btn-ghost{width:100%;padding:13px;border-radius:14px;background:var(--surface2);border:1px solid var(--line2);color:var(--txt);font-weight:600}
+.ph-preview{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ph-preview img{width:100%;border-radius:11px;max-height:300px;object-fit:contain;background:#000}
+.ph-preview textarea{width:100%;min-height:70px;background:rgba(10,14,26,.6);border:1.5px solid var(--line2);border-radius:11px;padding:11px;color:var(--txt);font-size:14px;resize:vertical;outline:none}
+.ph-actions{display:flex;gap:9px}
+.ph-actions .btn-primary,.ph-actions .btn-ghost{padding:11px}
+.ph-list{display:flex;flex-direction:column;gap:12px}
+.ph-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;overflow:hidden}
+.ph-card img{width:100%;border-radius:11px;max-height:340px;object-fit:contain;background:#000}
+.ph-note-txt{font-size:13.5px;color:var(--txt);margin-top:10px;white-space:pre-wrap;line-height:1.55}
+.ph-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:11.5px;color:var(--muted2)}
+.ph-del{color:var(--red);font-size:12.5px;font-weight:600;padding:5px 9px;border-radius:8px;background:rgba(255,122,138,.1)}
+
+/* bottom nav */
+nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;height:calc(var(--nav-h) + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
+  display:flex;justify-content:space-around;align-items:stretch;
+  background:linear-gradient(0deg,rgba(8,11,20,.97),rgba(8,11,20,.86));
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line)
+}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted2);font-size:10.5px;font-weight:600;position:relative;transition:.15s}
+.nav-btn .ni{font-size:21px;line-height:1;transition:.2s}
+.nav-btn.on{color:var(--cyan)}
+.nav-btn.on .ni{transform:translateY(-2px) scale(1.08)}
+.nav-btn.on::before{content:'';position:absolute;top:7px;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,rgba(56,225,255,.22),transparent 70%)}
+/* AI yechuvchi */
+.ai-box{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.ai-input{width:100%;min-height:90px;background:rgba(10,14,26,.6);border:1.5px solid var(--line2);border-radius:13px;padding:13px;color:var(--txt);font-size:15px;line-height:1.5;resize:vertical;outline:none;font-family:var(--body)}
+.ai-input:focus{border-color:var(--cyan)}
+.ai-prev{position:relative}
+.ai-prev img{width:100%;border-radius:12px;max-height:280px;object-fit:contain;background:#000}
+.ai-prev-x{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(10,14,26,.82);border:1px solid var(--line2);color:#fff;font-size:18px;line-height:1}
+.ai-btn-row{display:flex;gap:10px}
+.ai-up-row{display:flex;gap:10px}
+.ai-up-row .btn-ghost{flex:1;font-size:13px;padding:13px 6px}
+.ai-btn-row .btn-ghost{flex:1.3}.ai-btn-row .btn-primary{flex:1}
+.ai-out{margin-top:14px}
+.ai-loading{display:flex;align-items:center;gap:10px;justify-content:center;padding:24px;color:var(--muted);font-size:14px}
+.spin{display:inline-block;width:17px;height:17px;border:2px solid rgba(56,225,255,.28);border-top-color:var(--cyan);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ai-ans{font-size:23px!important;word-break:break-word;line-height:1.3}
+.ai-note{margin-top:10px;font-size:12.5px;color:var(--muted);background:rgba(255,180,84,.08);border:1px solid rgba(255,180,84,.2);border-radius:10px;padding:10px 12px;line-height:1.5}
+.ai-hist-h{margin:22px 2px 12px;font-family:var(--display);font-weight:600;font-size:15px;color:var(--muted)}
+.ai-hist{display:flex;flex-direction:column;gap:12px}
+.hist-img{width:100%;border-radius:11px;max-height:200px;object-fit:contain;background:#000;margin-bottom:10px}
+/* Fizik kalkulyator */
+.calc-hint{font-size:11.5px;color:var(--muted);margin:0 2px 10px;line-height:1.5}
+.calc{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px}
+.calc-disp{background:rgba(10,14,26,.7);border:1px solid var(--line2);border-radius:13px;padding:12px 14px;margin-bottom:12px;min-height:74px;display:flex;flex-direction:column;justify-content:center;gap:4px;overflow:hidden}
+.calc-expr{font-family:var(--mono);font-size:18px;color:var(--txt);word-break:break-all;min-height:22px}
+.calc-res{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--cyan);text-align:right;word-break:break-all}
+.calc-res.err{color:var(--red);font-size:14px;font-weight:500}
+.calc-pad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.ckey{padding:14px 0;border-radius:13px;background:var(--surface2);border:1px solid var(--line2);color:var(--txt);font-size:16px;font-weight:600;font-family:var(--mono);transition:.1s;min-height:48px}
+.ckey:active{transform:scale(.94);background:rgba(56,225,255,.12)}
+.ckey.num{background:rgba(30,39,66,.85)}
+.ckey.op{color:var(--amber)}
+.ckey.fnk{color:var(--red);font-size:14px}
+.ckey.eq{background:linear-gradient(135deg,var(--cyan),var(--cyan-d));color:#04222b;border-color:transparent;font-weight:700}
+</style>
+<script src="https://js.puter.com/v2/"></script>
+</head>
+<body>
+<header>
+  <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g stroke="#38e1ff" stroke-width="2.4">
+      <ellipse cx="24" cy="24" rx="20" ry="8"/>
+      <ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(60 24 24)"/>
+      <ellipse cx="24" cy="24" rx="20" ry="8" transform="rotate(120 24 24)"/>
+    </g>
+    <circle cx="24" cy="24" r="4.6" fill="#ffb454"/>
+  </svg>
+  <div class="brand"><b>Fizik<i>Lab</i></b><span>aniq fizika kalkulyatori</span></div>
+  <div class="hdr-actions">
+    <button class="icon-btn accent hidden" id="install-btn">⤓ O‘rnatish</button>
+    <button class="icon-btn" id="share-btn">↗ Ulashish</button>
+  </div>
+</header>
+
+<main>
+  <section class="view active" id="view-yechuvchi"></section>
+  <section class="view" id="view-hisob"></section>
+  <section class="view" id="view-misol"></section>
+  <section class="view" id="view-formula"></section>
+  <section class="view" id="view-asbob"></section>
+</main>
+
+<nav>
+  <button class="nav-btn on" data-v="yechuvchi"><span class="ni">✨</span>Yechuvchi</button>
+  <button class="nav-btn" data-v="hisob"><span class="ni">🧮</span>Hisob</button>
+  <button class="nav-btn" data-v="misol"><span class="ni">📚</span>Misollar</button>
+  <button class="nav-btn" data-v="formula"><span class="ni">📐</span>Formula</button>
+  <button class="nav-btn" data-v="asbob"><span class="ni">🛠️</span>Asbob</button>
+</nav>
+
+<script>
+// ---------- helpers ----------
+const PI = Math.PI;
+function g(x){ // format a given input value cleanly
+  if (x === '' || x == null || isNaN(x)) return '?';
+  let n = Number(x);
+  if (Number.isInteger(n)) return String(n);
+  return String(Number(n.toPrecision(6)));
+}
+function fmt(x){ // format a result
+  if (x == null || !isFinite(x)) return '—';
+  if (x === 0) return '0';
+  const a = Math.abs(x);
+  if (a >= 1e6 || a < 1e-4){
+    let e = x.toExponential(3);
+    let m = e.match(/^(-?\d\.\d+)e([+-]\d+)$/);
+    if (m){ let exp = parseInt(m[2],10); return m[1].replace(/\.?0+$/,'') + '·10' + sup(exp); }
+    return e;
+  }
+  return String(Number(x.toPrecision(5)));
+}
+function sup(n){ const map={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'}; return String(n).split('').map(c=>map[c]||c).join(''); }
+function S(...rows){ return rows.map(r=>({l:r[0], c:r[1]})); }
+
+const G_CONST = 6.674e-11;
+const K_CONST = 9e9;
+const R_GAS = 8.31;
+
+const FORMULAS = [
+// ===================== KINEMATIKA =====================
+{
+  id:'v_uniform', topic:'kinematika', title:'Tekis harakat tezligi', eq:'v = s / t',
+  vars:{ v:{n:'Tezlik',u:'m/s'}, s:{n:'Masofa',u:'m'}, t:{n:'Vaqt',u:'s'} },
+  solve:{
+    v:v=>({value:v.s/v.t, unit:'m/s', steps:S(['Formula','v = s / t'],['Qo‘yamiz',`v = ${g(v.s)} / ${g(v.t)}`],['Natija',`v = ${fmt(v.s/v.t)} m/s`])}),
+    s:v=>({value:v.v*v.t, unit:'m', steps:S(['Formula','v = s / t'],['s ni ajratamiz','s = v · t'],['Qo‘yamiz',`s = ${g(v.v)} · ${g(v.t)}`],['Natija',`s = ${fmt(v.v*v.t)} m`])}),
+    t:v=>({value:v.s/v.v, unit:'s', steps:S(['Formula','v = s / t'],['t ni ajratamiz','t = s / v'],['Qo‘yamiz',`t = ${g(v.s)} / ${g(v.v)}`],['Natija',`t = ${fmt(v.s/v.v)} s`])}),
+  }
+},
+{
+  id:'accel_def', topic:'kinematika', title:'Tezlanish', eq:'a = (v − v₀) / t',
+  vars:{ a:{n:'Tezlanish',u:'m/s²'}, v:{n:'Oxirgi tezlik v',u:'m/s'}, v0:{n:'Boshlang‘ich tezlik v₀',u:'m/s'}, t:{n:'Vaqt',u:'s'} },
+  solve:{
+    a:v=>({value:(v.v-v.v0)/v.t, unit:'m/s²', steps:S(['Formula','a = (v − v₀) / t'],['Qo‘yamiz',`a = (${g(v.v)} − ${g(v.v0)}) / ${g(v.t)}`],['Natija',`a = ${fmt((v.v-v.v0)/v.t)} m/s²`])}),
+    v:v=>({value:v.v0+v.a*v.t, unit:'m/s', steps:S(['Formula','a = (v − v₀) / t'],['v ni ajratamiz','v = v₀ + a · t'],['Qo‘yamiz',`v = ${g(v.v0)} + ${g(v.a)} · ${g(v.t)}`],['Natija',`v = ${fmt(v.v0+v.a*v.t)} m/s`])}),
+    v0:v=>({value:v.v-v.a*v.t, unit:'m/s', steps:S(['Formula','a = (v − v₀) / t'],['v₀ ni ajratamiz','v₀ = v − a · t'],['Qo‘yamiz',`v₀ = ${g(v.v)} − ${g(v.a)} · ${g(v.t)}`],['Natija',`v₀ = ${fmt(v.v-v.a*v.t)} m/s`])}),
+    t:v=>({value:(v.v-v.v0)/v.a, unit:'s', steps:S(['Formula','a = (v − v₀) / t'],['t ni ajratamiz','t = (v − v₀) / a'],['Qo‘yamiz',`t = (${g(v.v)} − ${g(v.v0)}) / ${g(v.a)}`],['Natija',`t = ${fmt((v.v-v.v0)/v.a)} s`])}),
+  }
+},
+{
+  id:'vfinal', topic:'kinematika', title:'Oxirgi tezlik', eq:'v = v₀ + a·t',
+  vars:{ v:{n:'Tezlik v',u:'m/s'}, v0:{n:'Boshlang‘ich tezlik v₀',u:'m/s'}, a:{n:'Tezlanish',u:'m/s²'}, t:{n:'Vaqt',u:'s'} },
+  solve:{
+    v:v=>({value:v.v0+v.a*v.t, unit:'m/s', steps:S(['Formula','v = v₀ + a · t'],['Qo‘yamiz',`v = ${g(v.v0)} + ${g(v.a)} · ${g(v.t)}`],['Natija',`v = ${fmt(v.v0+v.a*v.t)} m/s`])}),
+    v0:v=>({value:v.v-v.a*v.t, unit:'m/s', steps:S(['Formula','v = v₀ + a · t'],['v₀ ni ajratamiz','v₀ = v − a · t'],['Qo‘yamiz',`v₀ = ${g(v.v)} − ${g(v.a)} · ${g(v.t)}`],['Natija',`v₀ = ${fmt(v.v-v.a*v.t)} m/s`])}),
+    a:v=>({value:(v.v-v.v0)/v.t, unit:'m/s²', steps:S(['Formula','v = v₀ + a · t'],['a ni ajratamiz','a = (v − v₀) / t'],['Qo‘yamiz',`a = (${g(v.v)} − ${g(v.v0)}) / ${g(v.t)}`],['Natija',`a = ${fmt((v.v-v.v0)/v.t)} m/s²`])}),
+    t:v=>({value:(v.v-v.v0)/v.a, unit:'s', steps:S(['Formula','v = v₀ + a · t'],['t ni ajratamiz','t = (v − v₀) / a'],['Qo‘yamiz',`t = (${g(v.v)} − ${g(v.v0)}) / ${g(v.a)}`],['Natija',`t = ${fmt((v.v-v.v0)/v.a)} s`])}),
+  }
+},
+{
+  id:'displacement', topic:'kinematika', title:'Bosib o‘tilgan yo‘l', eq:'s = v₀·t + a·t²/2',
+  vars:{ s:{n:'Yo‘l',u:'m'}, v0:{n:'Boshlang‘ich tezlik v₀',u:'m/s'}, a:{n:'Tezlanish',u:'m/s²'}, t:{n:'Vaqt',u:'s'} },
+  solve:{
+    s:v=>({value:v.v0*v.t + v.a*v.t*v.t/2, unit:'m', steps:S(['Formula','s = v₀·t + a·t²/2'],['Qo‘yamiz',`s = ${g(v.v0)}·${g(v.t)} + ${g(v.a)}·${g(v.t)}²/2`],['Natija',`s = ${fmt(v.v0*v.t + v.a*v.t*v.t/2)} m`])}),
+    v0:v=>({value:(v.s - v.a*v.t*v.t/2)/v.t, unit:'m/s', steps:S(['Formula','s = v₀·t + a·t²/2'],['v₀ ni ajratamiz','v₀ = (s − a·t²/2) / t'],['Qo‘yamiz',`v₀ = (${g(v.s)} − ${g(v.a)}·${g(v.t)}²/2) / ${g(v.t)}`],['Natija',`v₀ = ${fmt((v.s - v.a*v.t*v.t/2)/v.t)} m/s`])}),
+    a:v=>({value:2*(v.s - v.v0*v.t)/(v.t*v.t), unit:'m/s²', steps:S(['Formula','s = v₀·t + a·t²/2'],['a ni ajratamiz','a = 2·(s − v₀·t) / t²'],['Qo‘yamiz',`a = 2·(${g(v.s)} − ${g(v.v0)}·${g(v.t)}) / ${g(v.t)}²`],['Natija',`a = ${fmt(2*(v.s - v.v0*v.t)/(v.t*v.t))} m/s²`])}),
+    t:v=>{ // quadratic (a/2)t² + v0 t - s = 0
+      let A=v.a/2, B=v.v0, C=-v.s, val;
+      if (Math.abs(A)<1e-12){ val = v.s/v.v0; }
+      else { let D=B*B-4*A*C; let r1=(-B+Math.sqrt(D))/(2*A), r2=(-B-Math.sqrt(D))/(2*A); val = [r1,r2].filter(x=>x>0 && isFinite(x)).sort((p,q)=>p-q)[0]; }
+      return {value:val, unit:'s', steps:S(['Formula','s = v₀·t + a·t²/2'],['Kvadrat tenglama','(a/2)·t² + v₀·t − s = 0'],['Qo‘yamiz',`${g(v.a/2)}·t² + ${g(v.v0)}·t − ${g(v.s)} = 0`],['Musbat ildiz',`t = ${fmt(val)} s`])};
+    },
+  }
+},
+{
+  id:'torricelli', topic:'kinematika', title:'Vaqtsiz formula', eq:'v² = v₀² + 2·a·s',
+  vars:{ v:{n:'Tezlik v',u:'m/s'}, v0:{n:'Boshlang‘ich tezlik v₀',u:'m/s'}, a:{n:'Tezlanish',u:'m/s²'}, s:{n:'Yo‘l',u:'m'} },
+  solve:{
+    v:v=>{const val=Math.sqrt(v.v0*v.v0+2*v.a*v.s); return {value:val, unit:'m/s', steps:S(['Formula','v² = v₀² + 2·a·s'],['v ni ajratamiz','v = √(v₀² + 2·a·s)'],['Qo‘yamiz',`v = √(${g(v.v0)}² + 2·${g(v.a)}·${g(v.s)})`],['Natija',`v = ${fmt(val)} m/s`])};},
+    v0:v=>{const val=Math.sqrt(v.v*v.v-2*v.a*v.s); return {value:val, unit:'m/s', steps:S(['Formula','v² = v₀² + 2·a·s'],['v₀ ni ajratamiz','v₀ = √(v² − 2·a·s)'],['Qo‘yamiz',`v₀ = √(${g(v.v)}² − 2·${g(v.a)}·${g(v.s)})`],['Natija',`v₀ = ${fmt(val)} m/s`])};},
+    a:v=>({value:(v.v*v.v-v.v0*v.v0)/(2*v.s), unit:'m/s²', steps:S(['Formula','v² = v₀² + 2·a·s'],['a ni ajratamiz','a = (v² − v₀²) / (2·s)'],['Qo‘yamiz',`a = (${g(v.v)}² − ${g(v.v0)}²) / (2·${g(v.s)})`],['Natija',`a = ${fmt((v.v*v.v-v.v0*v.v0)/(2*v.s))} m/s²`])}),
+    s:v=>({value:(v.v*v.v-v.v0*v.v0)/(2*v.a), unit:'m', steps:S(['Formula','v² = v₀² + 2·a·s'],['s ni ajratamiz','s = (v² − v₀²) / (2·a)'],['Qo‘yamiz',`s = (${g(v.v)}² − ${g(v.v0)}²) / (2·${g(v.a)})`],['Natija',`s = ${fmt((v.v*v.v-v.v0*v.v0)/(2*v.a))} m`])}),
+  }
+},
+{
+  id:'freefall_h', topic:'kinematika', title:'Erkin tushish (balandlik)', eq:'h = g·t²/2',
+  vars:{ h:{n:'Balandlik',u:'m'}, t:{n:'Vaqt',u:'s'}, g:{n:'Erkin tushish tezlanishi g',u:'m/s²',def:9.8} },
+  solve:{
+    h:v=>({value:v.g*v.t*v.t/2, unit:'m', steps:S(['Formula','h = g·t²/2'],['Qo‘yamiz',`h = ${g(v.g)}·${g(v.t)}²/2`],['Natija',`h = ${fmt(v.g*v.t*v.t/2)} m`])}),
+    t:v=>({value:Math.sqrt(2*v.h/v.g), unit:'s', steps:S(['Formula','h = g·t²/2'],['t ni ajratamiz','t = √(2·h / g)'],['Qo‘yamiz',`t = √(2·${g(v.h)} / ${g(v.g)})`],['Natija',`t = ${fmt(Math.sqrt(2*v.h/v.g))} s`])}),
+    g:v=>({value:2*v.h/(v.t*v.t), unit:'m/s²', steps:S(['Formula','h = g·t²/2'],['g ni ajratamiz','g = 2·h / t²'],['Qo‘yamiz',`g = 2·${g(v.h)} / ${g(v.t)}²`],['Natija',`g = ${fmt(2*v.h/(v.t*v.t))} m/s²`])}),
+  }
+},
+// ===================== DINAMIKA =====================
+{
+  id:'newton2', topic:'dinamika', title:'Nyutonning II qonuni', eq:'F = m·a',
+  vars:{ F:{n:'Kuch',u:'N'}, m:{n:'Massa',u:'kg'}, a:{n:'Tezlanish',u:'m/s²'} },
+  solve:{
+    F:v=>({value:v.m*v.a, unit:'N', steps:S(['Formula','F = m · a'],['Qo‘yamiz',`F = ${g(v.m)} · ${g(v.a)}`],['Natija',`F = ${fmt(v.m*v.a)} N`])}),
+    m:v=>({value:v.F/v.a, unit:'kg', steps:S(['Formula','F = m · a'],['m ni ajratamiz','m = F / a'],['Qo‘yamiz',`m = ${g(v.F)} / ${g(v.a)}`],['Natija',`m = ${fmt(v.F/v.a)} kg`])}),
+    a:v=>({value:v.F/v.m, unit:'m/s²', steps:S(['Formula','F = m · a'],['a ni ajratamiz','a = F / m'],['Qo‘yamiz',`a = ${g(v.F)} / ${g(v.m)}`],['Natija',`a = ${fmt(v.F/v.m)} m/s²`])}),
+  }
+},
+{
+  id:'weight', topic:'dinamika', title:'Og‘irlik kuchi', eq:'P = m·g',
+  vars:{ P:{n:'Og‘irlik',u:'N'}, m:{n:'Massa',u:'kg'}, g:{n:'g',u:'m/s²',def:9.8} },
+  solve:{
+    P:v=>({value:v.m*v.g, unit:'N', steps:S(['Formula','P = m · g'],['Qo‘yamiz',`P = ${g(v.m)} · ${g(v.g)}`],['Natija',`P = ${fmt(v.m*v.g)} N`])}),
+    m:v=>({value:v.P/v.g, unit:'kg', steps:S(['Formula','P = m · g'],['m ni ajratamiz','m = P / g'],['Qo‘yamiz',`m = ${g(v.P)} / ${g(v.g)}`],['Natija',`m = ${fmt(v.P/v.g)} kg`])}),
+    g:v=>({value:v.P/v.m, unit:'m/s²', steps:S(['Formula','P = m · g'],['g ni ajratamiz','g = P / m'],['Qo‘yamiz',`g = ${g(v.P)} / ${g(v.m)}`],['Natija',`g = ${fmt(v.P/v.m)} m/s²`])}),
+  }
+},
+{
+  id:'friction', topic:'dinamika', title:'Ishqalanish kuchi', eq:'F = μ·N',
+  vars:{ F:{n:'Ishqalanish kuchi',u:'N'}, mu:{n:'Ishqalanish koeff. μ',u:''}, N:{n:'Bosim kuchi N',u:'N'} },
+  solve:{
+    F:v=>({value:v.mu*v.N, unit:'N', steps:S(['Formula','F = μ · N'],['Qo‘yamiz',`F = ${g(v.mu)} · ${g(v.N)}`],['Natija',`F = ${fmt(v.mu*v.N)} N`])}),
+    mu:v=>({value:v.F/v.N, unit:'', steps:S(['Formula','F = μ · N'],['μ ni ajratamiz','μ = F / N'],['Qo‘yamiz',`μ = ${g(v.F)} / ${g(v.N)}`],['Natija',`μ = ${fmt(v.F/v.N)}`])}),
+    N:v=>({value:v.F/v.mu, unit:'N', steps:S(['Formula','F = μ · N'],['N ni ajratamiz','N = F / μ'],['Qo‘yamiz',`N = ${g(v.F)} / ${g(v.mu)}`],['Natija',`N = ${fmt(v.F/v.mu)} N`])}),
+  }
+},
+{
+  id:'centripetal', topic:'dinamika', title:'Markazga intilma kuch', eq:'F = m·v²/r',
+  vars:{ F:{n:'Kuch',u:'N'}, m:{n:'Massa',u:'kg'}, v:{n:'Tezlik',u:'m/s'}, r:{n:'Radius',u:'m'} },
+  solve:{
+    F:v=>({value:v.m*v.v*v.v/v.r, unit:'N', steps:S(['Formula','F = m·v²/r'],['Qo‘yamiz',`F = ${g(v.m)}·${g(v.v)}²/${g(v.r)}`],['Natija',`F = ${fmt(v.m*v.v*v.v/v.r)} N`])}),
+    m:v=>({value:v.F*v.r/(v.v*v.v), unit:'kg', steps:S(['Formula','F = m·v²/r'],['m ni ajratamiz','m = F·r / v²'],['Qo‘yamiz',`m = ${g(v.F)}·${g(v.r)} / ${g(v.v)}²`],['Natija',`m = ${fmt(v.F*v.r/(v.v*v.v))} kg`])}),
+    v:v=>({value:Math.sqrt(v.F*v.r/v.m), unit:'m/s', steps:S(['Formula','F = m·v²/r'],['v ni ajratamiz','v = √(F·r / m)'],['Qo‘yamiz',`v = √(${g(v.F)}·${g(v.r)} / ${g(v.m)})`],['Natija',`v = ${fmt(Math.sqrt(v.F*v.r/v.m))} m/s`])}),
+    r:v=>({value:v.m*v.v*v.v/v.F, unit:'m', steps:S(['Formula','F = m·v²/r'],['r ni ajratamiz','r = m·v² / F'],['Qo‘yamiz',`r = ${g(v.m)}·${g(v.v)}² / ${g(v.F)}`],['Natija',`r = ${fmt(v.m*v.v*v.v/v.F)} m`])}),
+  }
+},
+// ===================== ENERGIYA =====================
+{
+  id:'work', topic:'energiya', title:'Mexanik ish', eq:'A = F·s·cosα',
+  vars:{ A:{n:'Ish',u:'J'}, F:{n:'Kuch',u:'N'}, s:{n:'Yo‘l',u:'m'}, alpha:{n:'Burchak α (gradus)',u:'°',def:0} },
+  solve:{
+    A:v=>({value:v.F*v.s*Math.cos(v.alpha*PI/180), unit:'J', steps:S(['Formula','A = F·s·cosα'],['Qo‘yamiz',`A = ${g(v.F)}·${g(v.s)}·cos(${g(v.alpha)}°)`],['Natija',`A = ${fmt(v.F*v.s*Math.cos(v.alpha*PI/180))} J`])}),
+    F:v=>({value:v.A/(v.s*Math.cos(v.alpha*PI/180)), unit:'N', steps:S(['Formula','A = F·s·cosα'],['F ni ajratamiz','F = A / (s·cosα)'],['Qo‘yamiz',`F = ${g(v.A)} / (${g(v.s)}·cos(${g(v.alpha)}°))`],['Natija',`F = ${fmt(v.A/(v.s*Math.cos(v.alpha*PI/180)))} N`])}),
+    s:v=>({value:v.A/(v.F*Math.cos(v.alpha*PI/180)), unit:'m', steps:S(['Formula','A = F·s·cosα'],['s ni ajratamiz','s = A / (F·cosα)'],['Qo‘yamiz',`s = ${g(v.A)} / (${g(v.F)}·cos(${g(v.alpha)}°))`],['Natija',`s = ${fmt(v.A/(v.F*Math.cos(v.alpha*PI/180)))} m`])}),
+  }
+},
+{
+  id:'kinetic', topic:'energiya', title:'Kinetik energiya', eq:'Eₖ = m·v²/2',
+  vars:{ Ek:{n:'Kinetik energiya',u:'J'}, m:{n:'Massa',u:'kg'}, v:{n:'Tezlik',u:'m/s'} },
+  solve:{
+    Ek:v=>({value:v.m*v.v*v.v/2, unit:'J', steps:S(['Formula','Eₖ = m·v²/2'],['Qo‘yamiz',`Eₖ = ${g(v.m)}·${g(v.v)}²/2`],['Natija',`Eₖ = ${fmt(v.m*v.v*v.v/2)} J`])}),
+    m:v=>({value:2*v.Ek/(v.v*v.v), unit:'kg', steps:S(['Formula','Eₖ = m·v²/2'],['m ni ajratamiz','m = 2·Eₖ / v²'],['Qo‘yamiz',`m = 2·${g(v.Ek)} / ${g(v.v)}²`],['Natija',`m = ${fmt(2*v.Ek/(v.v*v.v))} kg`])}),
+    v:v=>({value:Math.sqrt(2*v.Ek/v.m), unit:'m/s', steps:S(['Formula','Eₖ = m·v²/2'],['v ni ajratamiz','v = √(2·Eₖ / m)'],['Qo‘yamiz',`v = √(2·${g(v.Ek)} / ${g(v.m)})`],['Natija',`v = ${fmt(Math.sqrt(2*v.Ek/v.m))} m/s`])}),
+  }
+},
+{
+  id:'potential', topic:'energiya', title:'Potensial energiya', eq:'Eₚ = m·g·h',
+  vars:{ Ep:{n:'Potensial energiya',u:'J'}, m:{n:'Massa',u:'kg'}, g:{n:'g',u:'m/s²',def:9.8}, h:{n:'Balandlik',u:'m'} },
+  solve:{
+    Ep:v=>({value:v.m*v.g*v.h, unit:'J', steps:S(['Formula','Eₚ = m·g·h'],['Qo‘yamiz',`Eₚ = ${g(v.m)}·${g(v.g)}·${g(v.h)}`],['Natija',`Eₚ = ${fmt(v.m*v.g*v.h)} J`])}),
+    m:v=>({value:v.Ep/(v.g*v.h), unit:'kg', steps:S(['Formula','Eₚ = m·g·h'],['m ni ajratamiz','m = Eₚ / (g·h)'],['Qo‘yamiz',`m = ${g(v.Ep)} / (${g(v.g)}·${g(v.h)})`],['Natija',`m = ${fmt(v.Ep/(v.g*v.h))} kg`])}),
+    h:v=>({value:v.Ep/(v.m*v.g), unit:'m', steps:S(['Formula','Eₚ = m·g·h'],['h ni ajratamiz','h = Eₚ / (m·g)'],['Qo‘yamiz',`h = ${g(v.Ep)} / (${g(v.m)}·${g(v.g)})`],['Natija',`h = ${fmt(v.Ep/(v.m*v.g))} m`])}),
+  }
+},
+{
+  id:'power', topic:'energiya', title:'Quvvat', eq:'N = A / t',
+  vars:{ N:{n:'Quvvat',u:'Vt'}, A:{n:'Ish',u:'J'}, t:{n:'Vaqt',u:'s'} },
+  solve:{
+    N:v=>({value:v.A/v.t, unit:'Vt', steps:S(['Formula','N = A / t'],['Qo‘yamiz',`N = ${g(v.A)} / ${g(v.t)}`],['Natija',`N = ${fmt(v.A/v.t)} Vt`])}),
+    A:v=>({value:v.N*v.t, unit:'J', steps:S(['Formula','N = A / t'],['A ni ajratamiz','A = N · t'],['Qo‘yamiz',`A = ${g(v.N)} · ${g(v.t)}`],['Natija',`A = ${fmt(v.N*v.t)} J`])}),
+    t:v=>({value:v.A/v.N, unit:'s', steps:S(['Formula','N = A / t'],['t ni ajratamiz','t = A / N'],['Qo‘yamiz',`t = ${g(v.A)} / ${g(v.N)}`],['Natija',`t = ${fmt(v.A/v.N)} s`])}),
+  }
+},
+// ===================== IMPULS =====================
+{
+  id:'momentum', topic:'impuls', title:'Jism impulsi', eq:'p = m·v',
+  vars:{ p:{n:'Impuls',u:'kg·m/s'}, m:{n:'Massa',u:'kg'}, v:{n:'Tezlik',u:'m/s'} },
+  solve:{
+    p:v=>({value:v.m*v.v, unit:'kg·m/s', steps:S(['Formula','p = m · v'],['Qo‘yamiz',`p = ${g(v.m)} · ${g(v.v)}`],['Natija',`p = ${fmt(v.m*v.v)} kg·m/s`])}),
+    m:v=>({value:v.p/v.v, unit:'kg', steps:S(['Formula','p = m · v'],['m ni ajratamiz','m = p / v'],['Qo‘yamiz',`m = ${g(v.p)} / ${g(v.v)}`],['Natija',`m = ${fmt(v.p/v.v)} kg`])}),
+    v:v=>({value:v.p/v.m, unit:'m/s', steps:S(['Formula','p = m · v'],['v ni ajratamiz','v = p / m'],['Qo‘yamiz',`v = ${g(v.p)} / ${g(v.m)}`],['Natija',`v = ${fmt(v.p/v.m)} m/s`])}),
+  }
+},
+{
+  id:'impulse_force', topic:'impuls', title:'Kuch impulsi', eq:'J = F·t',
+  vars:{ J:{n:'Kuch impulsi',u:'N·s'}, F:{n:'Kuch',u:'N'}, t:{n:'Vaqt',u:'s'} },
+  solve:{
+    J:v=>({value:v.F*v.t, unit:'N·s', steps:S(['Formula','J = F · t'],['Qo‘yamiz',`J = ${g(v.F)} · ${g(v.t)}`],['Natija',`J = ${fmt(v.F*v.t)} N·s`])}),
+    F:v=>({value:v.J/v.t, unit:'N', steps:S(['Formula','J = F · t'],['F ni ajratamiz','F = J / t'],['Qo‘yamiz',`F = ${g(v.J)} / ${g(v.t)}`],['Natija',`F = ${fmt(v.J/v.t)} N`])}),
+    t:v=>({value:v.J/v.F, unit:'s', steps:S(['Formula','J = F · t'],['t ni ajratamiz','t = J / F'],['Qo‘yamiz',`t = ${g(v.J)} / ${g(v.F)}`],['Natija',`t = ${fmt(v.J/v.F)} s`])}),
+  }
+},
+// ===================== TORTISHISH =====================
+{
+  id:'gravitation', topic:'tortishish', title:'Butun olam tortishish', eq:'F = G·m₁·m₂/r²',
+  vars:{ F:{n:'Tortishish kuchi',u:'N'}, m1:{n:'1-massa m₁',u:'kg'}, m2:{n:'2-massa m₂',u:'kg'}, r:{n:'Masofa',u:'m'} },
+  solve:{
+    F:v=>({value:G_CONST*v.m1*v.m2/(v.r*v.r), unit:'N', steps:S(['Formula','F = G·m₁·m₂/r²','G = 6.674·10⁻¹¹'],['Qo‘yamiz',`F = 6.674·10⁻¹¹·${g(v.m1)}·${g(v.m2)}/${g(v.r)}²`],['Natija',`F = ${fmt(G_CONST*v.m1*v.m2/(v.r*v.r))} N`])}),
+    m1:v=>({value:v.F*v.r*v.r/(G_CONST*v.m2), unit:'kg', steps:S(['Formula','F = G·m₁·m₂/r²'],['m₁ ni ajratamiz','m₁ = F·r² / (G·m₂)'],['Qo‘yamiz',`m₁ = ${g(v.F)}·${g(v.r)}² / (6.674·10⁻¹¹·${g(v.m2)})`],['Natija',`m₁ = ${fmt(v.F*v.r*v.r/(G_CONST*v.m2))} kg`])}),
+    r:v=>({value:Math.sqrt(G_CONST*v.m1*v.m2/v.F), unit:'m', steps:S(['Formula','F = G·m₁·m₂/r²'],['r ni ajratamiz','r = √(G·m₁·m₂ / F)'],['Qo‘yamiz',`r = √(6.674·10⁻¹¹·${g(v.m1)}·${g(v.m2)} / ${g(v.F)})`],['Natija',`r = ${fmt(Math.sqrt(G_CONST*v.m1*v.m2/v.F))} m`])}),
+  }
+},
+// ===================== ELEKTR =====================
+{
+  id:'ohm', topic:'elektr', title:'Om qonuni', eq:'I = U / R',
+  vars:{ I:{n:'Tok kuchi',u:'A'}, U:{n:'Kuchlanish',u:'V'}, R:{n:'Qarshilik',u:'Ω'} },
+  solve:{
+    I:v=>({value:v.U/v.R, unit:'A', steps:S(['Formula','I = U / R'],['Qo‘yamiz',`I = ${g(v.U)} / ${g(v.R)}`],['Natija',`I = ${fmt(v.U/v.R)} A`])}),
+    U:v=>({value:v.I*v.R, unit:'V', steps:S(['Formula','I = U / R'],['U ni ajratamiz','U = I · R'],['Qo‘yamiz',`U = ${g(v.I)} · ${g(v.R)}`],['Natija',`U = ${fmt(v.I*v.R)} V`])}),
+    R:v=>({value:v.U/v.I, unit:'Ω', steps:S(['Formula','I = U / R'],['R ni ajratamiz','R = U / I'],['Qo‘yamiz',`R = ${g(v.U)} / ${g(v.I)}`],['Natija',`R = ${fmt(v.U/v.I)} Ω`])}),
+  }
+},
+{
+  id:'el_power', topic:'elektr', title:'Elektr quvvati', eq:'P = U·I',
+  vars:{ P:{n:'Quvvat',u:'Vt'}, U:{n:'Kuchlanish',u:'V'}, I:{n:'Tok kuchi',u:'A'} },
+  solve:{
+    P:v=>({value:v.U*v.I, unit:'Vt', steps:S(['Formula','P = U · I'],['Qo‘yamiz',`P = ${g(v.U)} · ${g(v.I)}`],['Natija',`P = ${fmt(v.U*v.I)} Vt`])}),
+    U:v=>({value:v.P/v.I, unit:'V', steps:S(['Formula','P = U · I'],['U ni ajratamiz','U = P / I'],['Qo‘yamiz',`U = ${g(v.P)} / ${g(v.I)}`],['Natija',`U = ${fmt(v.P/v.I)} V`])}),
+    I:v=>({value:v.P/v.U, unit:'A', steps:S(['Formula','P = U · I'],['I ni ajratamiz','I = P / U'],['Qo‘yamiz',`I = ${g(v.P)} / ${g(v.U)}`],['Natija',`I = ${fmt(v.P/v.U)} A`])}),
+  }
+},
+{
+  id:'charge', topic:'elektr', title:'Elektr zaryadi', eq:'q = I·t',
+  vars:{ q:{n:'Zaryad',u:'C'}, I:{n:'Tok kuchi',u:'A'}, t:{n:'Vaqt',u:'s'} },
+  solve:{
+    q:v=>({value:v.I*v.t, unit:'C', steps:S(['Formula','q = I · t'],['Qo‘yamiz',`q = ${g(v.I)} · ${g(v.t)}`],['Natija',`q = ${fmt(v.I*v.t)} C`])}),
+    I:v=>({value:v.q/v.t, unit:'A', steps:S(['Formula','q = I · t'],['I ni ajratamiz','I = q / t'],['Qo‘yamiz',`I = ${g(v.q)} / ${g(v.t)}`],['Natija',`I = ${fmt(v.q/v.t)} A`])}),
+    t:v=>({value:v.q/v.I, unit:'s', steps:S(['Formula','q = I · t'],['t ni ajratamiz','t = q / I'],['Qo‘yamiz',`t = ${g(v.q)} / ${g(v.I)}`],['Natija',`t = ${fmt(v.q/v.I)} s`])}),
+  }
+},
+{
+  id:'coulomb', topic:'elektr', title:'Kulon qonuni', eq:'F = k·q₁·q₂/r²',
+  vars:{ F:{n:'Kuch',u:'N'}, q1:{n:'1-zaryad q₁',u:'C'}, q2:{n:'2-zaryad q₂',u:'C'}, r:{n:'Masofa',u:'m'} },
+  solve:{
+    F:v=>({value:K_CONST*Math.abs(v.q1*v.q2)/(v.r*v.r), unit:'N', steps:S(['Formula','F = k·q₁·q₂/r²','k = 9·10⁹'],['Qo‘yamiz',`F = 9·10⁹·|${g(v.q1)}·${g(v.q2)}|/${g(v.r)}²`],['Natija',`F = ${fmt(K_CONST*Math.abs(v.q1*v.q2)/(v.r*v.r))} N`])}),
+    r:v=>({value:Math.sqrt(K_CONST*Math.abs(v.q1*v.q2)/v.F), unit:'m', steps:S(['Formula','F = k·q₁·q₂/r²'],['r ni ajratamiz','r = √(k·q₁·q₂ / F)'],['Qo‘yamiz',`r = √(9·10⁹·|${g(v.q1)}·${g(v.q2)}| / ${g(v.F)})`],['Natija',`r = ${fmt(Math.sqrt(K_CONST*Math.abs(v.q1*v.q2)/v.F))} m`])}),
+  }
+},
+// ===================== TERMODINAMIKA =====================
+{
+  id:'heat', topic:'termodinamika', title:'Isitish issiqligi', eq:'Q = c·m·Δt',
+  vars:{ Q:{n:'Issiqlik miqdori',u:'J'}, c:{n:'Solishtirma issiqlik c',u:'J/(kg·°C)'}, m:{n:'Massa',u:'kg'}, dt:{n:'Harorat o‘zgarishi Δt',u:'°C'} },
+  solve:{
+    Q:v=>({value:v.c*v.m*v.dt, unit:'J', steps:S(['Formula','Q = c·m·Δt'],['Qo‘yamiz',`Q = ${g(v.c)}·${g(v.m)}·${g(v.dt)}`],['Natija',`Q = ${fmt(v.c*v.m*v.dt)} J`])}),
+    c:v=>({value:v.Q/(v.m*v.dt), unit:'J/(kg·°C)', steps:S(['Formula','Q = c·m·Δt'],['c ni ajratamiz','c = Q / (m·Δt)'],['Qo‘yamiz',`c = ${g(v.Q)} / (${g(v.m)}·${g(v.dt)})`],['Natija',`c = ${fmt(v.Q/(v.m*v.dt))} J/(kg·°C)`])}),
+    m:v=>({value:v.Q/(v.c*v.dt), unit:'kg', steps:S(['Formula','Q = c·m·Δt'],['m ni ajratamiz','m = Q / (c·Δt)'],['Qo‘yamiz',`m = ${g(v.Q)} / (${g(v.c)}·${g(v.dt)})`],['Natija',`m = ${fmt(v.Q/(v.c*v.dt))} kg`])}),
+    dt:v=>({value:v.Q/(v.c*v.m), unit:'°C', steps:S(['Formula','Q = c·m·Δt'],['Δt ni ajratamiz','Δt = Q / (c·m)'],['Qo‘yamiz',`Δt = ${g(v.Q)} / (${g(v.c)}·${g(v.m)})`],['Natija',`Δt = ${fmt(v.Q/(v.c*v.m))} °C`])}),
+  }
+},
+{
+  id:'idealgas', topic:'termodinamika', title:'Ideal gaz holati', eq:'P·V = ν·R·T',
+  vars:{ P:{n:'Bosim',u:'Pa'}, V:{n:'Hajm',u:'m³'}, nu:{n:'Modda miqdori ν',u:'mol'}, T:{n:'Harorat',u:'K'} },
+  solve:{
+    P:v=>({value:v.nu*R_GAS*v.T/v.V, unit:'Pa', steps:S(['Formula','P·V = ν·R·T','R = 8.31'],['P ni ajratamiz','P = ν·R·T / V'],['Qo‘yamiz',`P = ${g(v.nu)}·8.31·${g(v.T)} / ${g(v.V)}`],['Natija',`P = ${fmt(v.nu*R_GAS*v.T/v.V)} Pa`])}),
+    V:v=>({value:v.nu*R_GAS*v.T/v.P, unit:'m³', steps:S(['Formula','P·V = ν·R·T'],['V ni ajratamiz','V = ν·R·T / P'],['Qo‘yamiz',`V = ${g(v.nu)}·8.31·${g(v.T)} / ${g(v.P)}`],['Natija',`V = ${fmt(v.nu*R_GAS*v.T/v.P)} m³`])}),
+    nu:v=>({value:v.P*v.V/(R_GAS*v.T), unit:'mol', steps:S(['Formula','P·V = ν·R·T'],['ν ni ajratamiz','ν = P·V / (R·T)'],['Qo‘yamiz',`ν = ${g(v.P)}·${g(v.V)} / (8.31·${g(v.T)})`],['Natija',`ν = ${fmt(v.P*v.V/(R_GAS*v.T))} mol`])}),
+    T:v=>({value:v.P*v.V/(v.nu*R_GAS), unit:'K', steps:S(['Formula','P·V = ν·R·T'],['T ni ajratamiz','T = P·V / (ν·R)'],['Qo‘yamiz',`T = ${g(v.P)}·${g(v.V)} / (${g(v.nu)}·8.31)`],['Natija',`T = ${fmt(v.P*v.V/(v.nu*R_GAS))} K`])}),
+  }
+},
+// ===================== TEBRANISH =====================
+{
+  id:'pendulum', topic:'tebranish', title:'Matematik mayatnik davri', eq:'T = 2π·√(L/g)',
+  vars:{ T:{n:'Davr',u:'s'}, L:{n:'Uzunlik',u:'m'}, g:{n:'g',u:'m/s²',def:9.8} },
+  solve:{
+    T:v=>({value:2*PI*Math.sqrt(v.L/v.g), unit:'s', steps:S(['Formula','T = 2π·√(L/g)'],['Qo‘yamiz',`T = 2π·√(${g(v.L)}/${g(v.g)})`],['Natija',`T = ${fmt(2*PI*Math.sqrt(v.L/v.g))} s`])}),
+    L:v=>({value:v.g*Math.pow(v.T/(2*PI),2), unit:'m', steps:S(['Formula','T = 2π·√(L/g)'],['L ni ajratamiz','L = g·(T/2π)²'],['Qo‘yamiz',`L = ${g(v.g)}·(${g(v.T)}/2π)²`],['Natija',`L = ${fmt(v.g*Math.pow(v.T/(2*PI),2))} m`])}),
+    g:v=>({value:v.L*Math.pow(2*PI/v.T,2), unit:'m/s²', steps:S(['Formula','T = 2π·√(L/g)'],['g ni ajratamiz','g = L·(2π/T)²'],['Qo‘yamiz',`g = ${g(v.L)}·(2π/${g(v.T)})²`],['Natija',`g = ${fmt(v.L*Math.pow(2*PI/v.T,2))} m/s²`])}),
+  }
+},
+{
+  id:'spring', topic:'tebranish', title:'Prujinali mayatnik davri', eq:'T = 2π·√(m/k)',
+  vars:{ T:{n:'Davr',u:'s'}, m:{n:'Massa',u:'kg'}, k:{n:'Bikrlik k',u:'N/m'} },
+  solve:{
+    T:v=>({value:2*PI*Math.sqrt(v.m/v.k), unit:'s', steps:S(['Formula','T = 2π·√(m/k)'],['Qo‘yamiz',`T = 2π·√(${g(v.m)}/${g(v.k)})`],['Natija',`T = ${fmt(2*PI*Math.sqrt(v.m/v.k))} s`])}),
+    m:v=>({value:v.k*Math.pow(v.T/(2*PI),2), unit:'kg', steps:S(['Formula','T = 2π·√(m/k)'],['m ni ajratamiz','m = k·(T/2π)²'],['Qo‘yamiz',`m = ${g(v.k)}·(${g(v.T)}/2π)²`],['Natija',`m = ${fmt(v.k*Math.pow(v.T/(2*PI),2))} kg`])}),
+    k:v=>({value:v.m*Math.pow(2*PI/v.T,2), unit:'N/m', steps:S(['Formula','T = 2π·√(m/k)'],['k ni ajratamiz','k = m·(2π/T)²'],['Qo‘yamiz',`k = ${g(v.m)}·(2π/${g(v.T)})²`],['Natija',`k = ${fmt(v.m*Math.pow(2*PI/v.T,2))} N/m`])}),
+  }
+},
+{
+  id:'period_freq', topic:'tebranish', title:'Davr va chastota', eq:'T = 1 / ν',
+  vars:{ T:{n:'Davr',u:'s'}, nu:{n:'Chastota ν',u:'Hz'} },
+  solve:{
+    T:v=>({value:1/v.nu, unit:'s', steps:S(['Formula','T = 1 / ν'],['Qo‘yamiz',`T = 1 / ${g(v.nu)}`],['Natija',`T = ${fmt(1/v.nu)} s`])}),
+    nu:v=>({value:1/v.T, unit:'Hz', steps:S(['Formula','ν = 1 / T'],['Qo‘yamiz',`ν = 1 / ${g(v.T)}`],['Natija',`ν = ${fmt(1/v.T)} Hz`])}),
+  }
+},
+// ===================== OPTIKA =====================
+{
+  id:'lens', topic:'optika', title:'Yupqa linza formulasi', eq:'1/F = 1/d + 1/f',
+  vars:{ F:{n:'Fokus masofasi F',u:'m'}, d:{n:'Buyumgacha masofa d',u:'m'}, f:{n:'Tasvirgacha masofa f',u:'m'} },
+  solve:{
+    F:v=>({value:1/(1/v.d+1/v.f), unit:'m', steps:S(['Formula','1/F = 1/d + 1/f'],['F ni ajratamiz','F = 1 / (1/d + 1/f)'],['Qo‘yamiz',`F = 1 / (1/${g(v.d)} + 1/${g(v.f)})`],['Natija',`F = ${fmt(1/(1/v.d+1/v.f))} m`])}),
+    d:v=>({value:1/(1/v.F-1/v.f), unit:'m', steps:S(['Formula','1/F = 1/d + 1/f'],['d ni ajratamiz','d = 1 / (1/F − 1/f)'],['Qo‘yamiz',`d = 1 / (1/${g(v.F)} − 1/${g(v.f)})`],['Natija',`d = ${fmt(1/(1/v.F-1/v.f))} m`])}),
+    f:v=>({value:1/(1/v.F-1/v.d), unit:'m', steps:S(['Formula','1/F = 1/d + 1/f'],['f ni ajratamiz','f = 1 / (1/F − 1/d)'],['Qo‘yamiz',`f = 1 / (1/${g(v.F)} − 1/${g(v.d)})`],['Natija',`f = ${fmt(1/(1/v.F-1/v.d))} m`])}),
+  }
+},
+{
+  id:'optic_power', topic:'optika', title:'Linza optik kuchi', eq:'D = 1 / F',
+  vars:{ D:{n:'Optik kuch',u:'dptr'}, F:{n:'Fokus masofasi',u:'m'} },
+  solve:{
+    D:v=>({value:1/v.F, unit:'dptr', steps:S(['Formula','D = 1 / F'],['Qo‘yamiz',`D = 1 / ${g(v.F)}`],['Natija',`D = ${fmt(1/v.F)} dptr`])}),
+    F:v=>({value:1/v.D, unit:'m', steps:S(['Formula','D = 1 / F'],['F ni ajratamiz','F = 1 / D'],['Qo‘yamiz',`F = 1 / ${g(v.D)}`],['Natija',`F = ${fmt(1/v.D)} m`])}),
+  }
+},
+];
+
+// quick test
+
+// ===================== TOPIC META =====================
+const TOPICS = {
+  kinematika:   {name:'Kinematika',   icon:'🚀', desc:'Harakat, tezlik, tezlanish'},
+  dinamika:     {name:'Dinamika',     icon:'⚙️', desc:'Kuch, Nyuton qonunlari'},
+  energiya:     {name:'Energiya & Ish',icon:'⚡', desc:'Ish, energiya, quvvat'},
+  impuls:       {name:'Impuls',       icon:'🎯', desc:'Jism va kuch impulsi'},
+  tortishish:   {name:'Tortishish',   icon:'🌍', desc:'Butun olam tortishishi'},
+  elektr:       {name:'Elektr',       icon:'🔌', desc:'Tok, kuchlanish, zaryad'},
+  termodinamika:{name:'Termodinamika',icon:'🔥', desc:'Issiqlik, gaz qonunlari'},
+  tebranish:    {name:'Tebranish',    icon:'〰️', desc:'Mayatnik, davr, chastota'},
+  optika:       {name:'Optika',       icon:'🔍', desc:'Linza, fokus, optik kuch'},
+};
+const TOPIC_ORDER = ['kinematika','dinamika','energiya','impuls','tortishish','elektr','termodinamika','tebranish','optika'];
+
+// ===================== MISOLLAR (worked examples) =====================
+const EXAMPLES = [
+ {topic:'kinematika', q:'Avtomobil 72 km/soat tezlik bilan tekis harakatlanmoqda. U 30 soniyada qancha yo‘l bosadi?', ans:'600 m',
+  steps:S(['Berilgan','v = 72 km/soat,  t = 30 s'],['Birlikka o‘tkazamiz','v = 72 / 3.6 = 20 m/s'],['Formula','s = v · t'],['Hisob','s = 20 · 30 = 600 m'])},
+ {topic:'kinematika', q:'Jism tinch holatdan 2 m/s² tezlanish bilan harakatlana boshladi. 10 soniyadan keyin uning tezligi qancha bo‘ladi?', ans:'20 m/s',
+  steps:S(['Berilgan','v₀ = 0,  a = 2 m/s²,  t = 10 s'],['Formula','v = v₀ + a·t'],['Hisob','v = 0 + 2·10 = 20 m/s'])},
+ {topic:'kinematika', q:'Tosh 45 m balandlikdan erkin tushdi. U qancha vaqtda yerga yetadi? (g = 10 m/s²)', ans:'3 s',
+  steps:S(['Berilgan','h = 45 m,  g = 10 m/s²'],['Formula','h = g·t²/2'],['t ni ajratamiz','t = √(2·h / g)'],['Hisob','t = √(2·45 / 10) = √9 = 3 s'])},
+ {topic:'kinematika', q:'Poyezd 36 km/soat dan 54 km/soat gacha 10 soniyada tezlashdi. Tezlanishi qancha?', ans:'0,5 m/s²',
+  steps:S(['Berilgan','v₀ = 36 km/soat = 10 m/s,  v = 54 km/soat = 15 m/s,  t = 10 s'],['Formula','a = (v − v₀) / t'],['Hisob','a = (15 − 10) / 10 = 0,5 m/s²'])},
+ {topic:'dinamika', q:'Massasi 5 kg bo‘lgan jismga 20 N kuch ta’sir qilmoqda. Jism qanday tezlanish oladi?', ans:'4 m/s²',
+  steps:S(['Berilgan','m = 5 kg,  F = 20 N'],['Formula (Nyuton II)','F = m·a → a = F / m'],['Hisob','a = 20 / 5 = 4 m/s²'])},
+ {topic:'dinamika', q:'Massasi 2 kg jismning og‘irlik kuchini toping. (g = 9,8 m/s²)', ans:'19,6 N',
+  steps:S(['Berilgan','m = 2 kg,  g = 9,8 m/s²'],['Formula','P = m·g'],['Hisob','P = 2 · 9,8 = 19,6 N'])},
+ {topic:'dinamika', q:'Jismga 200 N bosim kuchi ta’sir qiladi, ishqalanish koeffitsienti 0,25. Ishqalanish kuchini toping.', ans:'50 N',
+  steps:S(['Berilgan','N = 200 N,  μ = 0,25'],['Formula','F = μ·N'],['Hisob','F = 0,25 · 200 = 50 N'])},
+ {topic:'energiya', q:'Massasi 1000 kg avtomobil 20 m/s tezlik bilan harakatlanmoqda. Uning kinetik energiyasi qancha?', ans:'200 kJ',
+  steps:S(['Berilgan','m = 1000 kg,  v = 20 m/s'],['Formula','Eₖ = m·v²/2'],['Hisob','Eₖ = 1000·20²/2 = 200000 J = 200 kJ'])},
+ {topic:'energiya', q:'50 N kuch jismni gorizontal yo‘nalishda 8 m ga siljitdi. Bajarilgan ishni toping.', ans:'400 J',
+  steps:S(['Berilgan','F = 50 N,  s = 8 m,  α = 0°'],['Formula','A = F·s·cosα'],['Hisob','A = 50·8·cos0° = 50·8·1 = 400 J'])},
+ {topic:'energiya', q:'Massasi 4 kg jism 5 m balandlikka ko‘tarildi. Potensial energiyasi qancha? (g = 10 m/s²)', ans:'200 J',
+  steps:S(['Berilgan','m = 4 kg,  h = 5 m,  g = 10 m/s²'],['Formula','Eₚ = m·g·h'],['Hisob','Eₚ = 4·10·5 = 200 J'])},
+ {topic:'energiya', q:'Nasos 5 soniyada 10000 J ish bajardi. Nasosning quvvatini toping.', ans:'2 kVt',
+  steps:S(['Berilgan','A = 10000 J,  t = 5 s'],['Formula','N = A / t'],['Hisob','N = 10000 / 5 = 2000 Vt = 2 kVt'])},
+ {topic:'impuls', q:'Massasi 3 kg jism 8 m/s tezlik bilan harakatlanmoqda. Uning impulsini toping.', ans:'24 kg·m/s',
+  steps:S(['Berilgan','m = 3 kg,  v = 8 m/s'],['Formula','p = m·v'],['Hisob','p = 3 · 8 = 24 kg·m/s'])},
+ {topic:'tortishish', q:'Bir-biridan 2 m masofada turgan ikkita 1000 kg massali jism o‘zaro qanday kuch bilan tortiladi?', ans:'1,67·10⁻⁵ N',
+  steps:S(['Berilgan','m₁ = m₂ = 1000 kg,  r = 2 m,  G = 6,674·10⁻¹¹'],['Formula','F = G·m₁·m₂/r²'],['Hisob','F = 6,674·10⁻¹¹·1000·1000 / 2² ≈ 1,67·10⁻⁵ N'])},
+ {topic:'elektr', q:'Lampochka qarshiligi 880 Ω, kuchlanish 220 V. U orqali o‘tayotgan tok kuchini toping.', ans:'0,25 A',
+  steps:S(['Berilgan','U = 220 V,  R = 880 Ω'],['Formula (Om qonuni)','I = U / R'],['Hisob','I = 220 / 880 = 0,25 A'])},
+ {topic:'elektr', q:'Elektr isitgich 220 V kuchlanishda 5 A tok iste’mol qiladi. Quvvatini toping.', ans:'1100 Vt',
+  steps:S(['Berilgan','U = 220 V,  I = 5 A'],['Formula','P = U·I'],['Hisob','P = 220 · 5 = 1100 Vt'])},
+ {topic:'elektr', q:'O‘tkazgichdan 2 A tok 1 minut davomida o‘tdi. O‘tgan zaryadni toping.', ans:'120 C',
+  steps:S(['Berilgan','I = 2 A,  t = 1 min = 60 s'],['Formula','q = I·t'],['Hisob','q = 2 · 60 = 120 C'])},
+ {topic:'termodinamika', q:'2 kg suvni 20 °C dan 80 °C gacha isitish uchun qancha issiqlik kerak? (c = 4200 J/(kg·°C))', ans:'504 kJ',
+  steps:S(['Berilgan','m = 2 kg,  Δt = 80 − 20 = 60 °C,  c = 4200'],['Formula','Q = c·m·Δt'],['Hisob','Q = 4200·2·60 = 504000 J = 504 kJ'])},
+ {topic:'tebranish', q:'Uzunligi 1 m matematik mayatnikning tebranish davrini toping. (g = 9,8 m/s²)', ans:'≈ 2,0 s',
+  steps:S(['Berilgan','L = 1 m,  g = 9,8 m/s²'],['Formula','T = 2π·√(L/g)'],['Hisob','T = 2π·√(1/9,8) ≈ 2,01 s'])},
+ {topic:'tebranish', q:'Massasi 0,2 kg yuk bikrligi 50 N/m prujinaga osilgan. Tebranish davrini toping.', ans:'≈ 0,4 s',
+  steps:S(['Berilgan','m = 0,2 kg,  k = 50 N/m'],['Formula','T = 2π·√(m/k)'],['Hisob','T = 2π·√(0,2/50) = 2π·√0,004 ≈ 0,397 s'])},
+ {topic:'optika', q:'Linzaning fokus masofasi 0,25 m. Uning optik kuchini toping.', ans:'4 dptr',
+  steps:S(['Berilgan','F = 0,25 m'],['Formula','D = 1 / F'],['Hisob','D = 1 / 0,25 = 4 dptr'])},
+ {topic:'optika', q:'Buyum linzadan 0,4 m, tasviri esa 0,4 m masofada. Linzaning fokus masofasini toping.', ans:'0,2 m',
+  steps:S(['Berilgan','d = 0,4 m,  f = 0,4 m'],['Formula','1/F = 1/d + 1/f'],['Hisob','1/F = 1/0,4 + 1/0,4 = 5 → F = 0,2 m'])},
+];
+
+// ===================== KONSTANTALAR =====================
+const CONSTANTS = [
+  {s:'g', n:'Erkin tushish tezlanishi', v:'9,8 m/s²'},
+  {s:'G', n:'Gravitatsion doimiy', v:'6,674·10⁻¹¹ N·m²/kg²'},
+  {s:'c', n:'Yorug‘lik tezligi (vakuumda)', v:'3·10⁸ m/s'},
+  {s:'k', n:'Kulon doimiysi', v:'9·10⁹ N·m²/C²'},
+  {s:'e', n:'Elementar zaryad', v:'1,6·10⁻¹⁹ C'},
+  {s:'R', n:'Universal gaz doimiysi', v:'8,31 J/(mol·K)'},
+  {s:'N_A', n:'Avogadro soni', v:'6,022·10²³ 1/mol'},
+  {s:'k_B', n:'Boltsman doimiysi', v:'1,38·10⁻²³ J/K'},
+  {s:'h', n:'Plank doimiysi', v:'6,63·10⁻³⁴ J·s'},
+  {s:'mₑ', n:'Elektron massasi', v:'9,11·10⁻³¹ kg'},
+  {s:'mₚ', n:'Proton massasi', v:'1,67·10⁻²⁷ kg'},
+  {s:'ε₀', n:'Elektr doimiysi', v:'8,85·10⁻¹² F/m'},
+  {s:'atm', n:'Normal atmosfera bosimi', v:'101325 Pa'},
+];
+
+// ===================== BIRLIK KONVERTORI =====================
+const CONVERTERS = {
+  'Uzunlik':   {base:'m', units:{'km':1000,'m':1,'sm':0.01,'mm':0.001,'mil':1609.34,'dyuym':0.0254}},
+  'Massa':     {base:'kg',units:{'t':1000,'kg':1,'g':0.001,'mg':1e-6}},
+  'Vaqt':      {base:'s', units:{'soat':3600,'min':60,'s':1,'ms':0.001}},
+  'Tezlik':    {base:'m/s',units:{'km/soat':1/3.6,'m/s':1,'km/s':1000}},
+  'Kuch':      {base:'N', units:{'kN':1000,'N':1,'kgk (kgs)':9.80665}},
+  'Energiya':  {base:'J', units:{'kJ':1000,'J':1,'kal':4.1868,'kkal':4186.8,'kVt·soat':3.6e6,'eV':1.602e-19}},
+  'Quvvat':    {base:'Vt',units:{'kVt':1000,'Vt':1,'ot kuchi':735.5}},
+  'Bosim':     {base:'Pa',units:{'MPa':1e6,'kPa':1000,'Pa':1,'atm':101325,'mm sim. ust.':133.322,'bar':1e5}},
+};
+const TEMP_UNITS = ['°C','°F','K'];
+function tempConvert(val, from, to){
+  let c; // to Celsius
+  if (from==='°C') c=val; else if (from==='°F') c=(val-32)*5/9; else c=val-273.15;
+  if (to==='°C') return c; if (to==='°F') return c*9/5+32; return c+273.15;
+}
+
+// ===================== APP STATE & UI =====================
+const $ = s => document.querySelector(s);
+const el = (tag,cls,html)=>{const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e;};
+
+function stepsHTML(steps){
+  return `<div class="steps">`+steps.map((st,i)=>
+    `<div class="step"><span class="step-l">${st.l}</span><span class="step-c">${(st.c||'').replace(/\n/g,'<br>')}</span></div>`
+  ).join('')+`</div>`;
+}
+
+// ---------- TAB: HISOB ----------
+let curTopic=null, curFormula=null, curTarget=null;
+function renderHisob(){
+  const v=$('#view-hisob'); v.innerHTML='';
+  if(!curTopic){
+    v.appendChild(el('p','section-lead','Mavzuni tanlang — keyin formulani tanlab, noma’lum kattalikni topasiz.'));
+    const grid=el('div','topic-grid');
+    TOPIC_ORDER.forEach(t=>{
+      const c=el('button','topic-card');
+      c.innerHTML=`<span class="t-icon">${TOPICS[t].icon}</span><span class="t-name">${TOPICS[t].name}</span><span class="t-desc">${TOPICS[t].desc}</span>`;
+      c.onclick=()=>{curTopic=t; curFormula=null; renderHisob();};
+      grid.appendChild(c);
+    });
+    v.appendChild(grid); return;
+  }
+  // back + topic title
+  const bar=el('div','crumb');
+  const back=el('button','back-btn','‹ Mavzular');
+  back.onclick=()=>{curTopic=null;curFormula=null;renderHisob();};
+  bar.appendChild(back);
+  bar.appendChild(el('span','crumb-title',`${TOPICS[curTopic].icon} ${TOPICS[curTopic].name}`));
+  v.appendChild(bar);
+
+  if(!curFormula){
+    const list=el('div','formula-list');
+    FORMULAS.filter(f=>f.topic===curTopic).forEach(f=>{
+      const c=el('button','formula-pick');
+      c.innerHTML=`<span class="fp-title">${f.title}</span><span class="fp-eq">${f.eq}</span>`;
+      c.onclick=()=>{curFormula=f.id; curTarget=null; renderHisob();};
+      list.appendChild(c);
+    });
+    v.appendChild(list); return;
+  }
+  // formula solver
+  const f=FORMULAS.find(x=>x.id===curFormula);
+  const card=el('div','solver');
+  card.appendChild(el('div','solver-eq',f.eq));
+  const targets=Object.keys(f.solve);
+  // target chooser
+  card.appendChild(el('div','field-label','Nimani topamiz?'));
+  const chips=el('div','chips');
+  if(curTarget==null||!targets.includes(curTarget)) curTarget=targets[0];
+  targets.forEach(tk=>{
+    const ch=el('button','chip'+(tk===curTarget?' on':''), f.vars[tk].n.replace(/ .*\(.*\)/,''));
+    ch.onclick=()=>{curTarget=tk; renderHisob();};
+    chips.appendChild(ch);
+  });
+  card.appendChild(chips);
+  // inputs (all vars except target)
+  const inputs=el('div','inputs');
+  Object.keys(f.vars).forEach(k=>{
+    if(k===curTarget) return;
+    const vr=f.vars[k];
+    const row=el('label','in-row');
+    row.innerHTML=`<span class="in-name">${vr.n}${vr.u?` <i>(${vr.u})</i>`:''}</span>`;
+    const inp=el('input','in-field'); inp.type='text'; inp.inputMode='decimal';
+    inp.placeholder='qiymat'; inp.dataset.k=k;
+    if(vr.def!=null) inp.value=vr.def;
+    inp.addEventListener('input',()=>doSolve(f));
+    row.appendChild(inp); inputs.appendChild(row);
+  });
+  card.appendChild(inputs);
+  // result area
+  const res=el('div','result hidden'); res.id='solve-result'; card.appendChild(res);
+  v.appendChild(card);
+  doSolve(f);
+}
+function doSolve(f){
+  const res=$('#solve-result'); if(!res) return;
+  const vals={}; let ok=true;
+  $('#view-hisob').querySelectorAll('.in-field').forEach(inp=>{
+    const raw=inp.value.trim().replace(',','.');
+    if(raw==='') {ok=false; return;}
+    const n=Number(raw); if(isNaN(n)){ok=false; return;}
+    vals[inp.dataset.k]=n;
+  });
+  if(!ok){ res.classList.add('hidden'); return; }
+  let out;
+  try{ out=f.solve[curTarget](vals); }catch(e){ ok=false; }
+  if(!out || out.value==null || !isFinite(out.value)){ res.classList.remove('hidden'); res.innerHTML='<div class="res-bad">Qiymatlarni tekshiring (0 ga bo‘lish yoki manfiy ildiz bo‘lishi mumkin).</div>'; return; }
+  res.classList.remove('hidden');
+  const sym=f.vars[curTarget].n.split(' ')[0];
+  res.innerHTML=`
+    <button class="res-card" onclick="this.nextElementSibling.classList.toggle('open');this.classList.toggle('open')">
+      <span class="res-top"><span class="res-label">Javob</span><span class="res-hint">yechimni ko‘rish ▾</span></span>
+      <span class="res-value">${fmt(out.value)}<span class="res-unit">${out.unit||''}</span></span>
+    </button>
+    <div class="res-steps">${stepsHTML(out.steps)}</div>`;
+}
+
+// ---------- TAB: MISOLLAR ----------
+let exFilter='all';
+function renderMisol(){
+  const v=$('#view-misol'); v.innerHTML='';
+  v.appendChild(el('p','section-lead','Tayyor masalalar. Javobni ko‘rish uchun ustiga bosing — to‘liq yechim ochiladi.'));
+  const fl=el('div','filter-row');
+  const mk=(key,label)=>{const b=el('button','filter'+(exFilter===key?' on':''),label); b.onclick=()=>{exFilter=key;renderMisol();}; return b;};
+  fl.appendChild(mk('all','Barchasi'));
+  TOPIC_ORDER.forEach(t=> fl.appendChild(mk(t,TOPICS[t].icon+' '+TOPICS[t].name)));
+  v.appendChild(fl);
+  const list=el('div','ex-list');
+  EXAMPLES.filter(e=>exFilter==='all'||e.topic===exFilter).forEach(e=>{
+    const c=el('div','ex-card');
+    c.innerHTML=`
+      <div class="ex-tag">${TOPICS[e.topic].icon} ${TOPICS[e.topic].name}</div>
+      <div class="ex-q">${e.q}</div>
+      <button class="ex-ans" onclick="this.nextElementSibling.classList.toggle('open');this.classList.toggle('open')">
+        <span>Javob: <b>${e.ans}</b></span><span class="ex-hint">yechim ▾</span>
+      </button>
+      <div class="ex-steps">${stepsHTML(e.steps)}</div>`;
+    list.appendChild(c);
+  });
+  v.appendChild(list);
+}
+
+// ---------- TAB: FORMULA (theory) ----------
+let thTopic='kinematika';
+function renderFormula(){
+  const v=$('#view-formula'); v.innerHTML='';
+  v.appendChild(el('p','section-lead','Maktab fizikasining asosiy formulalari va kattaliklari.'));
+  const fl=el('div','filter-row');
+  TOPIC_ORDER.forEach(t=>{const b=el('button','filter'+(thTopic===t?' on':''),TOPICS[t].icon+' '+TOPICS[t].name); b.onclick=()=>{thTopic=t;renderFormula();}; fl.appendChild(b);});
+  v.appendChild(fl);
+  const list=el('div','th-list');
+  FORMULAS.filter(f=>f.topic===thTopic).forEach(f=>{
+    const vars=Object.keys(f.vars).map(k=>`<li><b>${f.vars[k].n.split(' (')[0]}</b>${f.vars[k].u?` — ${f.vars[k].u}`:''}</li>`).join('');
+    const c=el('div','th-card');
+    c.innerHTML=`<div class="th-title">${f.title}</div><div class="th-eq">${f.eq}</div><ul class="th-vars">${vars}</ul>`;
+    list.appendChild(c);
+  });
+  v.appendChild(list);
+}
+
+// ---------- TAB: GRAFIK ----------
+let gType='st', gHost=null;
+function renderGrafik(host){
+  if(host) gHost=host;
+  const v=gHost; if(!v) return; v.innerHTML='';
+  v.appendChild(el('p','section-lead','Qiymatlarni kiriting — grafik real vaqtda chiziladi.'));
+  const tabs=el('div','filter-row');
+  [['st','Yo‘l–vaqt (s–t)'],['vt','Tezlik–vaqt (v–t)'],['osc','Harmonik tebranish']].forEach(([k,l])=>{
+    const b=el('button','filter'+(gType===k?' on':''),l); b.onclick=()=>{gType=k;renderGrafik();}; tabs.appendChild(b);
+  });
+  v.appendChild(tabs);
+  const box=el('div','graph-box');
+  let fields;
+  if(gType==='osc') fields=[['A','Amplituda A (m)','0.5'],['T','Davr T (s)','2'],['tmax','Maks. vaqt (s)','6']];
+  else fields=[['v0','Boshlang‘ich tezlik v₀ (m/s)','0'],['a','Tezlanish a (m/s²)','2'],['tmax','Maks. vaqt (s)','10']];
+  const ins=el('div','g-inputs');
+  fields.forEach(([k,lab,def])=>{
+    const r=el('label','in-row');
+    r.innerHTML=`<span class="in-name">${lab}</span>`;
+    const i=el('input','in-field'); i.type='text'; i.inputMode='decimal'; i.value=def; i.dataset.k=k;
+    i.addEventListener('input',drawGraph); r.appendChild(i); ins.appendChild(r);
+  });
+  box.appendChild(ins);
+  const cv=el('canvas','graph-canvas'); cv.id='gcanvas'; box.appendChild(cv);
+  const cap=el('div','g-caption'); cap.id='gcap'; box.appendChild(cap);
+  v.appendChild(box);
+  requestAnimationFrame(drawGraph);
+}
+function drawGraph(){
+  const cv=$('#gcanvas'); if(!cv) return;
+  const dpr=window.devicePixelRatio||1;
+  const W=cv.clientWidth||320, H=260;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
+  const vals={}; (gHost||document).querySelectorAll('.g-inputs .in-field').forEach(i=>vals[i.dataset.k]=Number(i.value.replace(',','.'))||0);
+  const pad={l:42,r:14,t:14,b:30};
+  const px=W-pad.l-pad.r, py=H-pad.t-pad.b;
+  let f, tmax=Math.max(vals.tmax||10,0.1), ymax, ylabel, xlabel='t (s)', color='#38e1ff', caption;
+  if(gType==='st'){ f=t=>vals.v0*t+vals.a*t*t/2; ylabel='s (m)'; caption='s(t) = v₀·t + a·t²/2'; }
+  else if(gType==='vt'){ f=t=>vals.v0+vals.a*t; ylabel='v (m/s)'; caption='v(t) = v₀ + a·t'; }
+  else { f=t=>vals.A*Math.sin(2*Math.PI*t/(vals.T||1)); ylabel='x (m)'; caption='x(t) = A·sin(2π·t/T)'; }
+  // sample
+  const N=240, xs=[],ys=[]; let ymin=0; ymax=0;
+  for(let i=0;i<=N;i++){const t=tmax*i/N; const y=f(t); xs.push(t); ys.push(y); if(y>ymax)ymax=y; if(y<ymin)ymin=y;}
+  if(gType==='osc'){ymax=Math.max(ymax,Math.abs(ymin),1e-6); ymin=-ymax;}
+  if(ymax===ymin){ymax=ymin+1;}
+  const X=t=>pad.l+px*(t/tmax);
+  const Y=y=>pad.t+py*(1-(y-ymin)/(ymax-ymin));
+  // axes grid
+  ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=1; ctx.fillStyle='#7d88a6'; ctx.font='11px system-ui';
+  for(let i=0;i<=5;i++){const gy=pad.t+py*i/5; ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(W-pad.r,gy);ctx.stroke();
+    const yv=ymax-(ymax-ymin)*i/5; ctx.fillText(fmt(yv),4,gy+3);}
+  for(let i=0;i<=5;i++){const gx=pad.l+px*i/5; ctx.beginPath();ctx.moveTo(gx,pad.t);ctx.lineTo(gx,H-pad.b);ctx.stroke();
+    ctx.fillText(fmt(tmax*i/5),gx-6,H-pad.b+16);}
+  // zero axis
+  ctx.strokeStyle='rgba(255,255,255,0.25)'; ctx.beginPath();ctx.moveTo(pad.l,Y(0));ctx.lineTo(W-pad.r,Y(0));ctx.stroke();
+  // curve
+  ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.beginPath();
+  xs.forEach((t,i)=>{const X2=X(t),Y2=Y(ys[i]); i?ctx.lineTo(X2,Y2):ctx.moveTo(X2,Y2);});
+  ctx.stroke();
+  // glow fill
+  ctx.lineTo(X(tmax),Y(Math.max(0,ymin))); ctx.lineTo(X(0),Y(Math.max(0,ymin)));
+  const grd=ctx.createLinearGradient(0,pad.t,0,H-pad.b); grd.addColorStop(0,'rgba(56,225,255,0.18)'); grd.addColorStop(1,'rgba(56,225,255,0)');
+  ctx.fillStyle=grd; ctx.fill();
+  ctx.fillStyle='#9aa6c4'; ctx.font='12px system-ui'; ctx.fillText(ylabel,pad.l,11);
+  $('#gcap').textContent=caption;
+}
+
+// ---------- TAB: ASBOB ----------
+let toolView='menu';
+function renderAsbob(){
+  const v=$('#view-asbob'); v.innerHTML='';
+  if(toolView==='menu'){
+    const grid=el('div','tool-grid');
+    [['grafik','📈','Grafik chizish','Yo‘l–vaqt, tezlik–vaqt, tebranish'],
+     ['konvertor','📏','Birlik konvertori','Uzunlik, massa, tezlik, kuch…'],
+     ['konstanta','🔢','Fizik doimiylar','g, G, c, k, R va boshqalar']].forEach(([k,ic,n,d])=>{
+      const c=el('button','tool-card');
+      c.innerHTML=`<span class="t-icon">${ic}</span><span class="t-name">${n}</span><span class="t-desc">${d}</span>`;
+      c.onclick=()=>{toolView=k;renderAsbob();}; grid.appendChild(c);
+    });
+    v.appendChild(grid); return;
+  }
+  const back=el('button','back-btn','‹ Asboblar'); back.onclick=()=>{toolView='menu';renderAsbob();}; v.appendChild(back);
+  if(toolView==='konvertor') renderConverter(v);
+  if(toolView==='konstanta') renderConstants(v);
+  if(toolView==='grafik'){ const gc=el('div'); v.appendChild(gc); renderGrafik(gc); }
+}
+let convCat='Uzunlik';
+function renderConverter(v){
+  v.appendChild(el('h2','tool-h','Birlik konvertori'));
+  const cats=Object.keys(CONVERTERS).concat(['Harorat']);
+  const fl=el('div','filter-row');
+  cats.forEach(c=>{const b=el('button','filter'+(convCat===c?' on':''),c);b.onclick=()=>{convCat=c;renderAsbob();};fl.appendChild(b);});
+  v.appendChild(fl);
+  const isTemp=convCat==='Harorat';
+  const units=isTemp?TEMP_UNITS:Object.keys(CONVERTERS[convCat].units);
+  const wrap=el('div','conv-wrap');
+  const mkSel=id=>{const s=el('select','conv-sel');s.id=id;units.forEach(u=>{const o=el('option',null,u);o.value=u;s.appendChild(o);});return s;};
+  const r1=el('div','conv-row'); const inp=el('input','conv-input');inp.type='text';inp.inputMode='decimal';inp.value='1';inp.id='conv-in';
+  const s1=mkSel('conv-from'); r1.appendChild(inp); r1.appendChild(s1);
+  const r2=el('div','conv-row'); const out=el('input','conv-input out');out.id='conv-out';out.readOnly=true;
+  const s2=mkSel('conv-to'); if(units[1])s2.value=units[1]; r2.appendChild(out); r2.appendChild(s2);
+  wrap.appendChild(r1); wrap.appendChild(el('div','conv-eq','=')); wrap.appendChild(r2);
+  v.appendChild(wrap);
+  const calc=()=>{
+    const val=Number(inp.value.replace(',','.')); const from=s1.value,to=s2.value;
+    if(isNaN(val)){out.value='';return;}
+    let r; if(isTemp) r=tempConvert(val,from,to);
+    else {const u=CONVERTERS[convCat].units; r=val*u[from]/u[to];}
+    out.value=fmt(r);
+  };
+  [inp,s1,s2].forEach(e=>e.addEventListener('input',calc)); s1.addEventListener('change',calc); s2.addEventListener('change',calc);
+  if(units[1])s2.value=units[1]; calc();
+}
+function renderConstants(v){
+  v.appendChild(el('h2','tool-h','Fizik doimiylar'));
+  const list=el('div','const-list');
+  CONSTANTS.forEach(c=>{const r=el('div','const-row');r.innerHTML=`<span class="c-sym">${c.s}</span><span class="c-mid"><b>${c.n}</b></span><span class="c-val">${c.v}</span>`;list.appendChild(r);});
+  v.appendChild(list);
+}
+
+// ---------- TAB: YECHUVCHI (AI) ----------
+const AI_SYSTEM = `Siz tajribali fizika o'qituvchisisiz. O'quvchi bergan fizika masalasini (matn yoki rasmda) yeching.
+Qat'iy qoidalar:
+- FAQAT JSON qaytaring. Hech qanday markdown, izoh yoki matn qo'shmang.
+- JSON formati: {"topic":"mavzu nomi","answer":"qisqa yakuniy javob birligi bilan","steps":[{"l":"Berilgan","c":"..."},{"l":"Formula","c":"..."},{"l":"Yechish","c":"..."},{"l":"Javob","c":"..."}],"note":""}
+- Hisob-kitobni juda aniq bajaring. SI birliklarida ishlang, birliklarni to'g'ri yozing.
+- "steps" ichida har bir qadamni sodda tushuntiring: formulani, sonlarni qo'yib ko'rsating va natijani yozing — toki o'quvchi xuddi shunday masalalarni keyin o'zi mustaqil yecha olsin.
+- Agar matn/rasmda fizika masalasi bo'lmasa: answer="Bu fizika masalasi emas", steps=[].
+- Ma'lumot yetishmasa, qanday qabul qilganingizni "note" da yozing.
+- Hammasi o'zbek tilida bo'lsin.`;
+let aiImage=null, aiBusy=false;
+function buildUserText(t){ return t && t.trim() ? t.trim() : 'Quyidagi rasmda fizika masalasi bor. Uni yech.'; }
+function processImage(file, cb){
+  const rd=new FileReader();
+  rd.onerror=()=>cb(null);
+  rd.onload=()=>{
+    const raw=rd.result;
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        let w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+        const max=1280, sc=Math.min(1, max/Math.max(w,h||1));
+        const cw=Math.max(1,Math.round(w*sc)), ch=Math.max(1,Math.round(h*sc));
+        const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+        cv.getContext('2d').drawImage(img,0,0,cw,ch);
+        const url=cv.toDataURL('image/jpeg',0.85);
+        const m=url.match(/^data:(.*?);base64,(.*)$/);
+        cb({url, mediaType:m?m[1]:'image/jpeg', data:m?m[2]:''});
+      }catch(_){ const m=raw.match(/^data:(.*?);base64,(.*)$/); cb({url:raw, mediaType:m?m[1]:'image/jpeg', data:m?m[2]:''}); }
+    };
+    img.onerror=()=>{ const m=raw.match(/^data:(.*?);base64,(.*)$/); cb({url:raw, mediaType:m?m[1]:'image/jpeg', data:m?m[2]:''}); };
+    img.src=raw;
+  };
+  rd.readAsDataURL(file);
+}
+function loadHist(){try{return JSON.parse(localStorage.getItem('fl_hist')||'[]');}catch(e){return[];}}
+function saveHist(a){
+  const arr=a.slice(0,20);
+  try{ localStorage.setItem('fl_hist',JSON.stringify(arr)); }
+  catch(e){ try{ localStorage.setItem('fl_hist',JSON.stringify(arr.map(h=>({...h,img:null})))); }catch(_){} }
+}
+function parseSolution(data){
+  if(data && typeof data==='object' && data.answer && Array.isArray(data.steps)) return data;
+  let txt='';
+  if(typeof data==='string') txt=data;
+  else if(data && data.content) (data.content||[]).forEach(b=>{if(b.type==='text')txt+=b.text;});
+  txt=txt.trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```\s*$/,'').trim();
+  const a=txt.indexOf('{'), b=txt.lastIndexOf('}');
+  if(a>=0&&b>a) txt=txt.slice(a,b+1);
+  return JSON.parse(txt);
+}
+function puterText(r){
+  if(!r) return '';
+  if(typeof r==='string') return r;
+  if(r.message){ const c=r.message.content; if(typeof c==='string')return c; if(Array.isArray(c))return c.map(p=>(p&&p.text)||'').join(''); }
+  if(typeof r.text==='string') return r.text;
+  if(Array.isArray(r.content)) return r.content.map(p=>(p&&p.text)||'').join('');
+  if(r.content && typeof r.content==='string') return r.content;
+  return String(r);
+}
+async function solveProblem(payload){
+  // 1) Netlify server funksiyasi (Gemini — deploy uchun, bepul kalit serverda)
+  try{
+    const r=await fetch('/.netlify/functions/solve',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({text:payload.text,image:payload.image})});
+    if(r.status!==404){
+      const d=await r.json().catch(()=>null);
+      if(r.ok && d && (d.answer||Array.isArray(d.steps))) return parseSolution(d);
+    }
+  }catch(e){}
+  // 2) Claude.ai ichida ochilganda — Claude'ning o'z AI'si (kalitsiz, test uchun)
+  try{
+    const content=[];
+    if(payload.image && payload.image.data) content.push({type:'image',source:{type:'base64',media_type:payload.image.mediaType,data:payload.image.data}});
+    content.push({type:'text',text:buildUserText(payload.text)});
+    const r2=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,system:AI_SYSTEM,messages:[{role:'user',content}]})});
+    if(r2.ok) return parseSolution(await r2.json());
+  }catch(e){}
+  // 3) Puter.js (kalitsiz, brauzerda — deploy qilingan saytda zaxira)
+  try{
+    if(typeof puter!=='undefined' && puter.ai && puter.ai.chat){
+      const prompt = AI_SYSTEM + '\n\n=== MASALA ===\n' + buildUserText(payload.text);
+      const resp = payload.imageURL
+        ? await puter.ai.chat(prompt, payload.imageURL, {model:'google/gemini-2.5-flash'})
+        : await puter.ai.chat(prompt, {model:'google/gemini-2.5-flash'});
+      return parseSolution(puterText(resp));
+    }
+  }catch(e){}
+  throw new Error('NOSERVER');
+}
+function renderYechuvchi(){
+  const v=$('#view-yechuvchi'); v.innerHTML='';
+  v.appendChild(el('p','section-lead','Masalani yozing, rasmga oling yoki galereyadan skrinshot yuklang — ilova javobini chiqaradi. Javob ustiga bossangiz to‘liq yechim (shpargalka) ochiladi.'));
+  const box=el('div','ai-box');
+  const ta=el('textarea','ai-input'); ta.id='ai-text'; ta.placeholder='Masalan: Avtomobil 72 km/soat tezlik bilan 30 soniyada qancha yo‘l bosadi?';
+  box.appendChild(ta);
+  const prev=el('div','ai-prev'+(aiImage?'':' hidden')); prev.id='ai-prev';
+  if(aiImage) prev.innerHTML=`<img src="${aiImage.url}"><button class="ai-prev-x" id="ai-rm" aria-label="O‘chirish">×</button>`;
+  box.appendChild(prev);
+  const fileCam=el('input'); fileCam.type='file'; fileCam.accept='image/*'; fileCam.capture='environment'; fileCam.style.display='none';
+  const fileGal=el('input'); fileGal.type='file'; fileGal.accept='image/*'; fileGal.style.display='none';
+  const upRow=el('div','ai-up-row');
+  const camBtn=el('button','btn-ghost','📷 Rasm olish');
+  const galBtn=el('button','btn-ghost','🖼 Galereya / skrinshot');
+  camBtn.onclick=()=>fileCam.click();
+  galBtn.onclick=()=>fileGal.click();
+  upRow.appendChild(camBtn); upRow.appendChild(galBtn);
+  const solveBtn=el('button','btn-primary','✨ Yechish'); solveBtn.id='ai-solve';
+  box.appendChild(upRow); box.appendChild(solveBtn); box.appendChild(fileCam); box.appendChild(fileGal);
+  v.appendChild(box);
+  const out=el('div','ai-out'); out.id='ai-out'; v.appendChild(out);
+  const calcWrap=el('div'); v.appendChild(calcWrap); buildCalc(calcWrap);
+  const onpick=e=>{const f=e.target.files[0]; if(!f)return; processImage(f,im=>{aiImage=im; renderYechuvchi();});};
+  fileCam.onchange=onpick; fileGal.onchange=onpick;
+  if(aiImage){ const rm=$('#ai-rm'); if(rm)rm.onclick=()=>{aiImage=null; renderYechuvchi();}; }
+  solveBtn.onclick=runSolve;
+  const hist=loadHist();
+  if(hist.length){
+    v.appendChild(el('div','ai-hist-h','Oldingi masalalar'));
+    const hl=el('div','ai-hist');
+    hist.forEach((h,i)=>{
+      const c=el('div','ex-card');
+      c.innerHTML=`${h.img?`<img class="hist-img" src="${h.img}">`:''}
+        <div class="ex-q">${(h.q||'Rasmdagi masala').replace(/</g,'&lt;')}</div>
+        <button class="ex-ans" onclick="this.nextElementSibling.classList.toggle('open');this.classList.toggle('open')"><span>Javob: <b>${(h.answer||'').replace(/</g,'&lt;')}</b></span><span class="ex-hint">yechim ▾</span></button>
+        <div class="ex-steps">${stepsHTML(h.steps||[])}</div>
+        <div class="ph-foot"><span></span><button class="ph-del" data-i="${i}">O‘chirish</button></div>`;
+      hl.appendChild(c);
+    });
+    v.appendChild(hl);
+    hl.querySelectorAll('.ph-del').forEach(b=>b.onclick=()=>{const a=loadHist();a.splice(Number(b.dataset.i),1);saveHist(a);renderYechuvchi();});
+  }
+}
+async function runSolve(){
+  if(aiBusy) return;
+  const text=$('#ai-text').value.trim();
+  if(!text && !aiImage){ alert('Masala yozing yoki rasm biriktiring.'); return; }
+  aiBusy=true;
+  const out=$('#ai-out'); out.innerHTML=`<div class="ai-loading"><span class="spin"></span> Yechilmoqda…</div>`;
+  const sb=$('#ai-solve'); if(sb)sb.disabled=true;
+  try{
+    const sol=await solveProblem({text, image:aiImage?{mediaType:aiImage.mediaType,data:aiImage.data}:null, imageURL:aiImage?aiImage.url:null});
+    if(!sol || !sol.answer) throw new Error('PARSE');
+    out.innerHTML=`
+      <button class="res-card" onclick="this.nextElementSibling.classList.toggle('open');this.classList.toggle('open')">
+        <span class="res-top"><span class="res-label">${(sol.topic||'Javob').replace(/</g,'&lt;')}</span><span class="res-hint">yechimni ko‘rish ▾</span></span>
+        <span class="res-value ai-ans">${(sol.answer||'').replace(/</g,'&lt;')}</span>
+      </button>
+      <div class="res-steps">${stepsHTML(sol.steps||[])}${sol.note?`<div class="ai-note">${(sol.note||'').replace(/</g,'&lt;')}</div>`:''}</div>`;
+    const h=loadHist(); h.unshift({q:text, img:aiImage?aiImage.url:null, answer:sol.answer, steps:sol.steps||[], t:Date.now()}); saveHist(h);
+  }catch(e){
+    const noServer = e.message==='NOSERVER' || /Failed to fetch|NetworkError|load failed|CORS/i.test(e.message||'');
+    out.innerHTML=`<div class="res-bad"><b>Hozircha yechib bo‘lmadi.</b><br>${noServer
+      ?'AI yechuvchi internet bilan ishlaydi. Internetingizni tekshiring. Agar saytda ishlamasa, README’dagi bepul Gemini kalitini sozlang. Internetsiz “Hisob” bo‘limidan foydalaning — u aniq hisoblaydi.'
+      :'Xato: '+(e.message||'nomaʼlum')}</div>`;
+  }
+  aiBusy=false; const sb2=$('#ai-solve'); if(sb2)sb2.disabled=false;
+}
+
+// ===================== FIZIK KALKULYATOR =====================
+function evalExpr(raw, deg){
+  deg = deg!==false;
+  let s = raw
+    .replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-')
+    .replace(/√/g,' sqrt ').replace(/∛/g,' cbrt ')
+    .replace(/π/g,' pi ');
+  const toks=[]; let i=0;
+  const fns=['sqrt','cbrt','sin','cos','tan','asin','acos','atan','log','ln','exp','abs'];
+  while(i<s.length){
+    const c=s[i];
+    if(c===' '){i++;continue;}
+    if(/[0-9.]/.test(c)){ let j=i+1; while(j<s.length&&/[0-9.]/.test(s[j]))j++; toks.push({t:'num',v:parseFloat(s.slice(i,j))}); i=j; continue; }
+    if(/[a-z]/i.test(c)){ let j=i+1; while(j<s.length&&/[a-z]/i.test(s[j]))j++; const w=s.slice(i,j).toLowerCase();
+      if(w==='pi'){toks.push({t:'num',v:Math.PI});} else if(w==='e'){toks.push({t:'num',v:Math.E});}
+      else if(fns.includes(w)){toks.push({t:'fn',v:w});} else throw new Error('Nomaʼlum: '+w);
+      i=j; continue; }
+    if('+-*/^'.includes(c)){toks.push({t:'op',v:c});i++;continue;}
+    if(c==='('){toks.push({t:'lp'});i++;continue;}
+    if(c===')'){toks.push({t:'rp'});i++;continue;}
+    if(c==='%'){toks.push({t:'pct'});i++;continue;}
+    throw new Error('Belgi: '+c);
+  }
+  const out=[];
+  for(let k=0;k<toks.length;k++){
+    const a=out[out.length-1], b=toks[k];
+    if(a){ const aEnd=a.t==='num'||a.t==='rp'||a.t==='pct'; const bStart=b.t==='num'||b.t==='lp'||b.t==='fn'; if(aEnd&&bStart) out.push({t:'op',v:'*'}); }
+    out.push(b);
+  }
+  let p=0; const peek=()=>out[p], next=()=>out[p++];
+  function parseExpr(){ let v=parseTerm(); while(peek()&&peek().t==='op'&&(peek().v==='+'||peek().v==='-')){const o=next().v; const r=parseTerm(); v=o==='+'?v+r:v-r;} return v; }
+  function parseTerm(){ let v=parseUnary(); while(peek()&&peek().t==='op'&&(peek().v==='*'||peek().v==='/')){const o=next().v; const r=parseUnary(); v=o==='*'?v*r:v/r;} return v; }
+  function parseUnary(){ if(peek()&&peek().t==='op'&&peek().v==='-'){next();return -parseUnary();} if(peek()&&peek().t==='op'&&peek().v==='+'){next();return parseUnary();} return parsePower(); }
+  function parsePower(){ let base=parsePostfix(); if(peek()&&peek().t==='op'&&peek().v==='^'){next(); const e=parseUnary(); return Math.pow(base,e);} return base; }
+  function parsePostfix(){ let v=parsePrimary(); while(peek()&&peek().t==='pct'){next(); v=v/100;} return v; }
+  function parsePrimary(){
+    const tk=peek(); if(!tk) throw new Error('tugallanmagan');
+    if(tk.t==='num'){next();return tk.v;}
+    if(tk.t==='fn'){next();
+      if(peek()&&peek().t==='lp'){ next(); const arg=parseExpr(); if(!peek()||peek().t!=='rp')throw new Error(') kerak'); next(); return applyFn(tk.v,arg); }
+      return applyFn(tk.v, parsePrimary());
+    }
+    if(tk.t==='lp'){next(); const v=parseExpr(); if(!peek()||peek().t!=='rp')throw new Error(') kerak'); next(); return v;}
+    throw new Error('kutilmagan');
+  }
+  function applyFn(f,x){ const D=Math.PI/180;
+    switch(f){ case 'sqrt':return Math.sqrt(x); case 'cbrt':return Math.cbrt(x);
+      case 'sin':return Math.sin(deg?x*D:x); case 'cos':return Math.cos(deg?x*D:x); case 'tan':return Math.tan(deg?x*D:x);
+      case 'asin':return deg?Math.asin(x)/D:Math.asin(x); case 'acos':return deg?Math.acos(x)/D:Math.acos(x); case 'atan':return deg?Math.atan(x)/D:Math.atan(x);
+      case 'log':return Math.log10(x); case 'ln':return Math.log(x); case 'exp':return Math.exp(x); case 'abs':return Math.abs(x);
+    } throw new Error('fn'); }
+  const res=parseExpr();
+  if(p<out.length) throw new Error('ortiqcha belgi');
+  if(!isFinite(res)) throw new Error('aniqlanmagan');
+  return res;
+}
+function fmtCalc(x){ if(!isFinite(x))return 'xato'; if(Math.abs(x)<1e-12)x=0; return Number(x.toPrecision(12)).toString(); }
+function balanceParens(s){ let o=0; for(const c of s){ if(c==='(')o++; else if(c===')')o--; } return s + (o>0?')'.repeat(o):''); }
+let calcTokens=[], calcDeg=true;
+const CALC_KEYS=[
+  [['DEG','deg'],['(','('],[')',')'],['⌫','back'],['C','clear']],
+  [['sin','sin('],['cos','cos('],['tan','tan('],['ln','ln('],['log','log(']],
+  [['√','√('],['∛','∛('],['xⁿ','^'],['π','π'],['e','e']],
+  [['7','7'],['8','8'],['9','9'],['÷','÷'],['x²','^2']],
+  [['4','4'],['5','5'],['6','6'],['×','×'],['ⁿ√','^(1/']],
+  [['1','1'],['2','2'],['3','3'],['−','−'],['×10ⁿ','×10^']],
+  [['0','0'],['.','.'],['%','%'],['+','+'],['=','eq']],
+];
+function buildCalc(host){
+  host.innerHTML='';
+  host.appendChild(el('div','ai-hist-h','Fizik kalkulyator'));
+  host.appendChild(el('p','calc-hint','Sonlar, ildiz (√, ∛), daraja (xⁿ), ×10ⁿ, π, sin/cos… — qo‘lda yozib hisoblang. <b>ⁿ√</b>: avval sonni yozing, so‘ng ⁿ√ va darajani kiriting, ) bilan yoping.'));
+  const card=el('div','calc');
+  const disp=el('div','calc-disp');
+  disp.innerHTML=`<div class="calc-expr" id="calc-expr"></div><div class="calc-res" id="calc-res">0</div>`;
+  card.appendChild(disp);
+  const pad=el('div','calc-pad');
+  CALC_KEYS.forEach(row=>row.forEach(([label,tok])=>{
+    const b=el('button','ckey'+(/^[0-9.]$/.test(label)?' num':'')+(label==='='?' eq':'')+(['÷','×','−','+'].includes(label)?' op':'')+(['back','clear'].includes(tok)?' fnk':''),label);
+    if(label==='=') b.classList.add('eq');
+    b.onclick=()=>calcPress(tok);
+    pad.appendChild(b);
+  }));
+  card.appendChild(pad);
+  host.appendChild(card);
+  calcRefresh();
+}
+function calcRefresh(){
+  const e=document.getElementById('calc-expr'), r=document.getElementById('calc-res');
+  if(!e||!r) return;
+  e.textContent=calcTokens.join('');
+  const degBtn=[...document.querySelectorAll('.ckey')].find(b=>b.textContent==='DEG'||b.textContent==='RAD');
+  if(degBtn) degBtn.textContent=calcDeg?'DEG':'RAD';
+  if(!calcTokens.length){ r.textContent='0'; r.classList.remove('err'); return; }
+  try{ const val=evalExpr(balanceParens(calcTokens.join('')),calcDeg); r.textContent='= '+fmtCalc(val); r.classList.remove('err'); }
+  catch(_){ r.textContent='…'; r.classList.remove('err'); }
+}
+function calcPress(tok){
+  if(tok==='clear'){ calcTokens=[]; calcRefresh(); return; }
+  if(tok==='back'){ calcTokens.pop(); calcRefresh(); return; }
+  if(tok==='deg'){ calcDeg=!calcDeg; calcRefresh(); return; }
+  if(tok==='eq'){
+    try{ const val=evalExpr(balanceParens(calcTokens.join('')),calcDeg); calcTokens=[fmtCalc(val)]; calcRefresh(); }
+    catch(_){ const r=document.getElementById('calc-res'); if(r){r.textContent='Xato — ifodani tekshiring'; r.classList.add('err');} }
+    return;
+  }
+  calcTokens.push(tok); calcRefresh();
+}
+
+// ---------- NAV ----------
+const VIEWS=['yechuvchi','hisob','misol','formula','asbob'];
+function show(view){
+  VIEWS.forEach(w=>{$('#view-'+w).classList.toggle('active',w===view); document.querySelector(`.nav-btn[data-v="${w}"]`).classList.toggle('on',w===view);});
+  window.scrollTo(0,0);
+  if(view==='yechuvchi')renderYechuvchi(); if(view==='hisob')renderHisob(); if(view==='misol')renderMisol(); if(view==='formula')renderFormula(); if(view==='asbob')renderAsbob();
+}
+
+
+// ---------- INSTALL / SHARE ----------
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('#install-btn').classList.remove('hidden');});
+function doInstall(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.finally(()=>{deferredPrompt=null;$('#install-btn').classList.add('hidden');});}else{alert('Ilovani o‘rnatish uchun brauzer menyusidan “Bosh ekranga qo‘shish” (Add to Home Screen) ni tanlang.');}}
+async function doShare(){
+  const data={title:'FizikLab — fizika kalkulyatori', text:'Aniq hisoblaydigan fizika kalkulyatori. Ko‘rib chiq!', url:location.href};
+  try{ if(navigator.share){await navigator.share(data);} else {await navigator.clipboard.writeText(location.href); alert('Havola nusxalandi! Do‘stlaringizga yuboring.');} }catch(e){}
+}
+
+// ---------- INIT ----------
+window.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>show(b.dataset.v));
+  $('#install-btn').onclick=doInstall;
+  $('#share-btn').onclick=doShare;
+  show('yechuvchi');
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+  window.addEventListener('resize',()=>{if($('#gcanvas'))drawGraph();});
+});
+</script>
+</body>
+</html>
