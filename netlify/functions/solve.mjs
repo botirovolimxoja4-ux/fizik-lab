@@ -10,6 +10,14 @@ Qat'iy qoidalar:
 - JSON aniq shu ko'rinishda bo'lsin:
 {"topic":"mavzu nomi","answer":"qisqa yakuniy javob birligi bilan","steps":[{"l":"Berilgan","c":"..."},{"l":"Formula","c":"..."},{"l":"Yechish","c":"..."},{"l":"Javob","c":"..."}],"note":""}
 - Hisob-kitobni juda aniq bajaring. SI birliklarida ishlang, birliklarni to'g'ri yozing.
+- MUHIM (izchillik uchun): har doim standart darslik usulini ishlating, har safar bir xil yo'l bilan yeching. Bir xil masalaga har doim bir xil javob chiqsin.
+- Avval masala shartini DIQQAT bilan o'qi va nima so'ralayotganini aniqla. Berilganlarni, qaysi kattalik topilishi kerakligini va to'g'ri formulani tanlab, to'liq yech.
+- ⚠️ MOLEKULA/ATOM HAJMI QOIDASI (izchillik uchun qat'iy amal qil) — bitta molekulaning hajmini qanday hisoblashni masala shartiga qarab tanla:
+  • AGAR masalada molekula/atom aniq SHAR (sfera) deb aytilgan BO'LSA, yoki molekulaning RADIUSI (r) berilgan bo'lsa → shar hajmi formulasini ishlat: V0 = (4/3)·π·r^3. Diametr berilgan bo'lsa r = d/2.
+  • AKS HOLDA (ya'ni shar deb aytilmagan, faqat DIAMETR d berilgan, idishdagi suyuqlik/jism hajmi yoki molekulalar soni so'ralgan oddiy holatda) → KUB yaqinlashuvini ishlat: har bir molekula tomoni d ga teng kub joyni egallaydi, V0 = d^3. Bu darslik standartidir. Bu holatda shar formulasini va π ni ISHLATMA.
+  • Tanlangan formulani butun masala davomida izchil ishlat. Bir xil masalaga har doim bir xil javob chiqishi SHART.
+  • ❗ ENG MUHIM ISTISNO: agar foydalanuvchi o'z so'rovida qaysi usulni ishlatishni aniq aytsa (masalan "kub usuli bilan yech", "shar usuli bilan yech", "sferadek hisobla"), uning ko'rsatmasi yuqoridagi standart qoidadan USTUN turadi — har doim foydalanuvchi so'ragan usulni ishlat. Agar foydalanuvchi "ikkala usul bilan" yoki "har ikki yo'l bilan" yechishni so'rasa — ikkala usulni ham (kub: V=d^3 va shar: (4/3)·π·r^3) alohida hisoblab, ikkala natijani ham "steps" ichida ko'rsat, va "answer" da ikkala javobni yoz.
+  • Misol (shar deb aytilmagan, faqat diametr): d = 3·10^-10 m, N = 10^24 → V0 = d^3, V = N·d^3 = 10^24·(3·10^-10)^3 = 2.7·10^-5 m^3 = 27 cm^3.
 - "steps" ichida har bir qadamni sodda tushuntiring: berilganlar, formula, sonlarni qo'yib hisoblash va natija — toki o'quvchi shunga o'xshash masalalarni keyin o'zi yecha olsin.
 - Agar matn/rasmda bir nechta masala bo'lsa va foydalanuvchi qaysi birini so'raganini aytsa (masalan "1-misol"), faqat o'shanisini yeching.
 - Agar fizika masalasi bo'lmasa: answer="Bu fizika masalasi emas", steps=[].
@@ -37,7 +45,7 @@ export default async (req) => {
   const payload = {
     system_instruction: { parts: [{ text: AI_SYSTEM }] },
     contents: [{ role: 'user', parts }],
-    generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
+    generationConfig: { responseMimeType: 'application/json', temperature: 0, topP: 0, topK: 1 },
   };
 
   let r;
